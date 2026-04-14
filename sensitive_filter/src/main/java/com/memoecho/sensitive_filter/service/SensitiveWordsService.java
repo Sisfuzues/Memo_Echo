@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-
+import org.apache.commons.io.FilenameUtils;
 import javax.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -20,9 +20,9 @@ public class SensitiveWordsService {
 
     @Value("${bot.dict.cache_path:./sensitive_words.bin}")
     private String cachePath;
-    @Value("${bot.dict.level3_path:dict/sensitive_words_level3}")
+    @Value("${bot.dict.level3_path:dict/sensitive_words_level3.txt}")
     private String txtLevel3Path;
-    @Value("${bot.dict.level2_path:dict/sensitive_words_level3}")
+    @Value("${bot.dict.level2_path:dict/sensitive_words_level2.txt}")
     private String txtLevel2Path;
 
     @PostConstruct
@@ -61,13 +61,29 @@ public class SensitiveWordsService {
         loadFromTxt(txtLevel2Path,tmp);
         loadFromTxt(txtLevel3Path,tmp);
 
+        acdat = new AhoCorasickDoubleArrayTrie<>();
         acdat.build(tmp);
         log.info("敏感词过滤器加载完毕，耗时:{} ms。",System.currentTimeMillis() - begin);
     }
 
     public void loadFromTxt(String path,TreeMap<String,SensitiveWords> tmp){
+        // 初始化解析级别
+        String res = FilenameUtils.getBaseName(path);
+        SensitiveWords.Level needLevel = SensitiveWords.Level.level1;
+        int needValue = switch (res.charAt(res.length() - 1)) {
+            case '3' -> {
+                needLevel = SensitiveWords.Level.level3;
+                yield 5;
+            }
+            case '2' -> {
+                needLevel = SensitiveWords.Level.level2;
+                yield 1;
+            }
+            default -> 0;
+        };
+        // 开始读文件
         try(InputStream is =
-                    new ClassPathResource(txtLevel2Path).getInputStream();
+                    new ClassPathResource(path).getInputStream();
             BufferedReader reader =
                     new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))){
             String line;
@@ -76,9 +92,8 @@ public class SensitiveWordsService {
                 if(line.isEmpty() || line.startsWith("#")){
                     continue;
                 }
-                tmp.put(line,new SensitiveWords(SensitiveWords.Level.level2,1));
+                tmp.put(line,new SensitiveWords(needLevel,needValue));
             }
-
         } catch (Exception e){
             log.error("{}路径文件敏感词读取失败，请查看原因：",path,e);
         }
