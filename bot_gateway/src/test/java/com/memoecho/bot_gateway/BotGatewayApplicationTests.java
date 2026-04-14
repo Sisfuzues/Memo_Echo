@@ -20,7 +20,7 @@ class BotGatewayApplicationTests {
     @Test
     void sendMessage(){
         Long groupId = 1098307542L;
-        String message = "我是java后端程序";
+        String message = "bot：我是java后端程序";
 
         log.info("开始发送信息。");
         qqBotMessage.sendGroupMessage(groupId,message);

@@ -48,8 +48,8 @@ public class QQBotMessage {
      * @date 2026/4/13 11:11
      */
     public void sendGroupMessage(Long groupId,String txt){
-        String url  = API_BASE + "/send_group_msg";
 
+        String url  = API_BASE + "/send_group_msg";
         Map<String,Object> payloud = new HashMap<>();
         payloud.put("group_id",groupId);
         payloud.put("message",txt);
