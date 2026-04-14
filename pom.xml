@@ -36,6 +36,7 @@
 
     <modules>
         <module>bot_gateway</module>
+        <module>sensitive_filter</module>
     </modules>
 
     <dependencyManagement>
