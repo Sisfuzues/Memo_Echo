@@ -12,12 +12,12 @@ import java.util.Map;
 
 @Slf4j(topic = "QQBotMessage")
 @Service
-public class QQBotMessage {
+public class QQBotMessageService {
     private final RestTemplate restTemplate;
 
     private final String API_BASE = "http://localhost:3011";
 
-    public QQBotMessage(RestTemplate restTemplate){
+    public QQBotMessageService(RestTemplate restTemplate){
         this.restTemplate = restTemplate;
     }
 
@@ -34,6 +34,24 @@ public class QQBotMessage {
      */
     public void sendPrivateMessage(Long userId,String txt){
         String url  = API_BASE + "/send_private_msg";
+
+        Map<String,Object> payloud = new HashMap<>();
+        payloud.put("group_id",userId);
+        payloud.put("message",txt);
+
+        String jsonMessage = JSON.toJSONString(payloud);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization","Bearer 1TTQ51pa-Q_Hr7kl");
+
+        HttpEntity<String> request = new HttpEntity<>(jsonMessage,headers);
+        try{
+            String response = restTemplate.postForObject(url,request,String.class);
+            log.info("发送信息成功,返回值："+response);
+        } catch (Exception e){
+            log.error("发送失败,",e);
+        }
     }
 
     /**

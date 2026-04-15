@@ -1,6 +1,6 @@
 package com.memoecho.bot_gateway;
 
-import com.memoecho.bot_gateway.service.QQBotMessage;
+import com.memoecho.bot_gateway.service.QQBotMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @Slf4j(topic = "test")
 class BotGatewayApplicationTests {
     @Autowired
-    private QQBotMessage qqBotMessage;
+    private QQBotMessageService qqBotMessageService;
 
     @Test
     void contextLoads() {
@@ -20,10 +20,10 @@ class BotGatewayApplicationTests {
     @Test
     void sendMessage(){
         Long groupId = 1098307542L;
-        String message = "bot：我是java后端程序";
+        String message = "你好你好！";
 
         log.info("开始发送信息。");
-        qqBotMessage.sendGroupMessage(groupId,message);
+        qqBotMessageService.sendGroupMessage(groupId,message);
         log.info("发送完成。");
     }
 }
