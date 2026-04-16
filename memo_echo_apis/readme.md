@@ -39,24 +39,30 @@
 - 入参：
     - `id` 类型 Long , 指的是需要操作的机器人ID。
     - `friendId` 类型 Long , 指需要解除好友的用户ID。
+
 2. **blockUser**
 - 介绍: 让指定的机器人拉黑指定用户
 - 连接地址： POST /api/admin/bot/user/block
 - 入参：
     - `id` 类型 Long , 指的是需要操作的机器人ID。
     - `userId` 类型 Long , 指需要拉黑的用户ID。
-- 出参：
-    - bool 类型的参数，表示是否成功拉黑。
+
 3. **addFriend**
 - 介绍: 同意指定用户的好友申请
 - 连接地址： POST /api/admin/bot/friend/add
 - 入参：
     - `id` 类型 Long , 指的是需要操作的机器人ID。
     - `flag` 类型 Long , 指需要同意是否同意好友申请的 flag
-- 出参：
-    - bool 类型的参数，表示是否成功添加。
+------
 ## control_all
 
+
+
 ## persistence
-## sensitive_filter
+
+用户的帐号密码，AI API,邮箱，手机号。
+
+
 ## ai_brain
+
+
