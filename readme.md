@@ -32,3 +32,65 @@ sudo docker logs --tail 50 memo_echo_napcat
 ![img.png](img.png)
 ![img_1.png](img_1.png)
 ![img_2.png](img_2.png)
+
+## 流程图
+```mermaid
+flowchart TD
+    %% 全局方向：从上到下，但在子图内可以微调
+    direction TD
+
+    %% 阶段零:前端协议层
+    subgraph BG ["0. 机器人网关 (Bot Gateway)"]
+        direction TB
+        BG_Read["消息接入 (Read)"] --> BG_At{"是否为@指令?"}
+        BG_At -- "否" --> BG_Rec["进入日程录入流程"]
+        BG_At -- "是" --> BG_Ign["进入消息回复流程"]
+        BG_Resp["消息回发 (Send)"]
+    end
+
+    %% 阶段二：消息总线（作为逻辑中心）
+    MQ_Hub(("MQ 消息队列总线"))
+
+    %% 阶段一：风控过滤层
+    subgraph SF ["1. 边缘拦截层 (Sensitive Filter)"]
+        direction TB
+        SF_Proc["监听: group_msg_received"] --> SF_AC{"AC 自动机引擎"}
+        SF_AC -- "安全" --> SF_OK["封装 Filtered DTO"]
+        SF_AC -- "危险" --> SF_Err["封装 Unsafe DTO"]
+    end
+
+    %% 阶段三：核心解析层
+    subgraph AI ["2. 智能解析层 (AI Brain)"]
+        direction TB
+       
+    end
+
+    %% 阶段四：数据存储层
+    subgraph DB ["3. 存储与持久化 (Persistence)"]
+        direction TB
+        DB_Save["监听: extracted / unsafe"] --> DB_MySQL[("MySQL 核心表")]
+        DB_MySQL --> DB_Redis["Redis 缓存同步"]
+    end
+
+    %% === 全局数据流转链路 ===
+    BG_Rec -->|pub: msg_received| MQ_Hub
+    MQ_Hub -->|sub| SF_Proc
+    
+    SF_OK  -->|pub: msg_filtered| MQ_Hub
+    SF_Err -->|pub: msg_unsafe| MQ_Hub
+    
+    MQ_Hub -->|sub| AI_Listen
+    AI_DTO -->|pub: msg_maked| MQ_Hub
+    
+    MQ_Hub -->|sub| DB_Save
+    DB_Redis -->|notify| BG_Resp
+
+    BG_Ign -->|pub: msg_received| MQ_Hub
+
+    %% 样式美化：采用冷峻且专业的色调
+    style MQ_Hub fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style SF_AC fill:#fff3e0,stroke:#e65100,color:#e65100
+    style AI_Prompt fill:#f3e5f5,stroke:#4a148c,color:#4a148c
+    style DB_MySQL fill:#e8f5e9,stroke:#1b5e20,color:#1b5e20
+    style BG_Resp fill:#fce4ec,stroke:#880e4f,stroke-dasharray: 5 5
+```
