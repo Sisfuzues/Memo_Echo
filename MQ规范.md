@@ -180,24 +180,7 @@
   }
   ```
 
-### 2.3 大模型处理后的群日程查询语句
-- **事件描述**: `ai_brain` 将处理后的日程查询语句送给 `persistence` 模块进行日程查询。
-- **发布方 (Producer)**: `ai_brain`
-- **订阅方 (Consumer)**: `persistence`
-- **路由坐标**:
-  - **Topic / Exchange**: `topic_group_needs`
-  - **Tag / RoutingKey**: `group_msg_processed`
-- **业务载荷 (Data Payload)**:
-  ```json
-  {
-    "type" : "sql", // or "fun"
-    "query" :{
-        "sql" : "select * from .... "
-    }
-  }
-  ```
-
-### 2.4 返回给Bot群日程
+### 2.3 返回给Bot群日程
 - **事件描述**: `persistence` 将处理后的日程发送给 `bot_gateway` 模块进行发送。
 - **发布方 (Producer)**: `persistence`
 - **订阅方 (Consumer)**: `bot_gateway`
@@ -278,24 +261,7 @@
   }
   ```
 
-### 3.3 大模型处理后的私聊日程查询语句
-- **事件描述**: `ai_brain` 将处理后的日程查询语句送给 `persistence` 模块进行日程查询。
-- **发布方 (Producer)**: `ai_brain`
-- **订阅方 (Consumer)**: `persistence`
-- **路由坐标**:
-  - **Topic / Exchange**: `topic_user_needs`
-  - **Tag / RoutingKey**: `private_msg_processed`
-- **业务载荷 (Data Payload)**:
-  ```json
-  {
-      "type" : "sql", // or "fun"
-      "query" :{
-        "sql" : "select * from .... "
-      }
-  }
-  ```
-
-### 3.4 返回给Bot私聊日程
+### 3.3 返回给Bot私聊日程
 - **事件描述**: `persistence` 将处理后的日程发送给 `bot_gateway` 模块进行发送。
 - **发布方 (Producer)**: `persistence`
 - **订阅方 (Consumer)**: `bot_gateway`

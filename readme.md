@@ -36,61 +36,95 @@ sudo docker logs --tail 50 memo_echo_napcat
 ## 流程图
 ```mermaid
 flowchart TD
-    %% 全局方向：从上到下，但在子图内可以微调
+    %% ==========================================
+    %% 1. 全局样式定义 (基于 Tailwind 柔和色系)
+    %% ==========================================
+    classDef mq_bus fill:#e0f2fe,stroke:#0284c7,stroke-width:3px,color:#0369a1
+    classDef endpoint fill:#f1f5f9,stroke:#475569,stroke-width:2px,color:#1e293b
+    classDef filter_node fill:#fff7ed,stroke:#ea580c,stroke-width:2px,color:#9a3412
+    classDef ai_node fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#6b21a8
+    classDef sync_node fill:#fce4ec,stroke:#e11d48,stroke-width:2px,color:#be123c
+    classDef db_node fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
+    classDef condition fill:#ffffff,stroke:#64748b,stroke-width:2px,color:#334155
+
     direction TD
 
-    %% 阶段零:前端协议层
-    subgraph BG ["0. 机器人网关 (Bot Gateway)"]
+    %% ==========================================
+    %% 2. 模块拓扑图
+    %% ==========================================
+    
+    subgraph BG ["🌐 0. 机器人网关 (Bot Gateway)"]
         direction TB
-        BG_Read["消息接入 (Read)"] --> BG_At{"是否为@指令?"}
+        BG_Read(["消息接入 (Read)"]) --> BG_At{"是否为@指令?"}
         BG_At -- "否" --> BG_Rec["进入日程录入流程"]
         BG_At -- "是" --> BG_Ign["进入消息回复流程"]
-        BG_Resp["消息回发 (Send)"]
+        BG_Resp(["消息回发 (Send)"])
     end
 
-    %% 阶段二：消息总线（作为逻辑中心）
-    MQ_Hub(("MQ 消息队列总线"))
+    MQ_Hub(("🔀 MQ 消息总线<br/>(RabbitMQ)"))
 
-    %% 阶段一：风控过滤层
-    subgraph SF ["1. 边缘拦截层 (Sensitive Filter)"]
+    subgraph SF ["🛡️ 1. 边缘风控层 (Sensitive Filter)"]
         direction TB
         SF_Proc["监听: group_msg_received"] --> SF_AC{"AC 自动机引擎"}
         SF_AC -- "安全" --> SF_OK["封装 Filtered DTO"]
         SF_AC -- "危险" --> SF_Err["封装 Unsafe DTO"]
     end
 
-    %% 阶段三：核心解析层
-    subgraph AI ["2. 智能解析层 (AI Brain)"]
+    subgraph AI ["🧠 2. 智能解析层 (AI Brain)"]
         direction TB
-       
+        AI_Listen["监听: msg_filtered"] --> Is_at{"是否为查询信息?"}
+        Is_at -- "是" --> Find["生成 Query 向量"]
+        Is_at -- "否" --> Keep["整理为日程 AI_DTO"]
     end
 
-    %% 阶段四：数据存储层
-    subgraph DB ["3. 存储与持久化 (Persistence)"]
+    subgraph DB ["🗄️ 3. 存储与持久化 (Persistence)"]
         direction TB
-        DB_Save["监听: extracted / unsafe"] --> DB_MySQL[("MySQL 核心表")]
-        DB_MySQL --> DB_Redis["Redis 缓存同步"]
+        DB_Qdrant[("🔺 Qdrant 向量库")]
+        DB_MySQL[("🛢️ MySQL 核心表")]
+
+        DB_Listen["监听: msg_maked"] --> DB_Qdrant
+        DB_Qdrant -- "主键 ID 映射" --> DB_MySQL
+        DB_Save["监听: unsafe"] --> DB_MySQL
+        DB_MySQL -. "数据同步" .-> DB_Redis[("⚡ Redis 缓存")]
     end
 
-    %% === 全局数据流转链路 ===
-    BG_Rec -->|pub: msg_received| MQ_Hub
-    MQ_Hub -->|sub| SF_Proc
+    %% ==========================================
+    %% 3. 全局链路连线 (协议语义化)
+    %% ==========================================
     
-    SF_OK  -->|pub: msg_filtered| MQ_Hub
-    SF_Err -->|pub: msg_unsafe| MQ_Hub
+    %% [异步 MQ 链路] - 使用蓝色虚线
+    BG_Rec -. "pub: msg_received" .-> MQ_Hub
+    BG_Ign -. "pub: msg_received" .-> MQ_Hub
     
-    MQ_Hub -->|sub| AI_Listen
-    AI_DTO -->|pub: msg_maked| MQ_Hub
+    MQ_Hub -. "sub" .-> SF_Proc
+    SF_OK  -. "pub: msg_filtered" .-> MQ_Hub
+    SF_Err -. "pub: msg_unsafe" .-> MQ_Hub
     
-    MQ_Hub -->|sub| DB_Save
-    DB_Redis -->|notify| BG_Resp
+    MQ_Hub -. "sub" .-> AI_Listen
+    MQ_Hub -. "sub" .-> DB_Save
+    Keep   -. "pub: msg_maked" .-> MQ_Hub
+    MQ_Hub -. "sub" .-> DB_Listen
+    
+    Find   -. "pub: msg_result" .-> MQ_Hub
+    MQ_Hub -. "sub" .-> BG_Resp
 
-    BG_Ign -->|pub: msg_received| MQ_Hub
+    %% [同步 gRPC 链路] - 使用红色加粗实线
+    Find == "gRPC 阻塞检索" ==> DB_Qdrant
 
-    %% 样式美化：采用冷峻且专业的色调
-    style MQ_Hub fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style SF_AC fill:#fff3e0,stroke:#e65100,color:#e65100
-    style AI_Prompt fill:#f3e5f5,stroke:#4a148c,color:#4a148c
-    style DB_MySQL fill:#e8f5e9,stroke:#1b5e20,color:#1b5e20
-    style BG_Resp fill:#fce4ec,stroke:#880e4f,stroke-dasharray: 5 5
+    %% ==========================================
+    %% 4. 样式应用
+    %% ==========================================
+    class MQ_Hub mq_bus;
+    class BG_Read,BG_Rec,BG_Ign,BG_Resp endpoint;
+    class SF_Proc,SF_OK,SF_Err filter_node;
+    class AI_Listen,Keep ai_node;
+    class Find sync_node;
+    class DB_Listen,DB_Save,DB_Qdrant,DB_MySQL,DB_Redis db_node;
+    class BG_At,SF_AC,Is_at condition;
+    
+    %% 给边框加上柔和的背景
+    style BG fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,stroke-dasharray: 5 5
+    style SF fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,stroke-dasharray: 5 5
+    style AI fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,stroke-dasharray: 5 5
+    style DB fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,stroke-dasharray: 5 5
 ```
