@@ -86,12 +86,25 @@
 - **业务载荷 (Data Payload)**:
   ```json
   {
-    "original_msg_id": -192837465, // 溯源ID
-    "schedule_time": [1712401200000, 1712401200000], // 提取出的具体时间戳
-    "location": "三教",            // 提取出的地点
-    "event_content": "开会",       // 提取出的事件
-    "participants": "全体同学",   // 参与者
-    "introduce" : "为了庆祝朱宇翔生日，学校邀请..."
+    "originalMsgId": -192837465,     // 溯源ID
+    "userId": 1122334455,            // 必须要有！入库MySQL和鉴权必须用
+    "groupId": 987654321,            // 群号
+    
+    // 1. 结构化业务数据 (交给 MySQL)
+    "schedule": {
+      "startTime": 1712401200000,    // 建议用具体的 startTime 和 endTime，比数组更清晰
+      "endTime": 1712408400000,
+      "location": "三教",
+      "content": "开会",
+      "participants": "全体同学",
+      "introduce": "为了庆祝朱宇翔生日，学校邀请..." 
+    },
+    
+    // 2. 语义向量数据 (交给 Qdrant)
+    "vector": [0.015, -0.022, 0.089, ...], // 1536维浮点数组
+    
+    // 3. 原始切块文本 (存入 Qdrant 的 payload/metadata 中，用于检索后直接返回给 LLM)
+    "chunkText": "【会议】地点：三教；参与：全体同学；内容：开会；补充：为了庆祝朱宇翔生日..."
   }
   ```
 
@@ -192,16 +205,10 @@
   {
     "type" : "user",
     "group_id": "10111",
-    "schedules" :[
-      {
-        "original_msg_id": -192837465, // 溯源ID
-        "schedule_time": [1712401200000, 1712401200000],
-        "location": "三教",            
-        "event_content": "开会",       
-        "participants": "全体同学",   
-        "introduce" : "为了庆祝朱宇翔生日，学校邀请..."
-      }
-    ]
+    "user_id" : null,
+
+    "reply_text" : "最终信息",
+    "original_msgId" : "1231231424143"  // 溯源的Id
   }
   ```
 
@@ -272,16 +279,10 @@
   ```json
   {
     "type" : "user",
-    "user_id": "10111",
-    "schedules" :[
-      {
-        "original_msg_id": -192837465, // 溯源ID
-        "schedule_time": [1712401200000, 1712401200000], 
-        "location": "三教",            
-        "event_content": "开会",       
-        "participants": "全体同学",   
-        "introduce" : "为了庆祝朱宇翔生日，学校邀请..."
-      }
-    ]
+    "group_id": null,
+    "user_id" : "10111",
+
+    "reply_text" : "最终信息",
+    "original_msgId" : "1231231424143"  // 溯源的Id
   }
   ```
