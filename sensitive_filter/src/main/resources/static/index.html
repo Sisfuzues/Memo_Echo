@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园舆情与敏感词风控大屏</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/echarts/dist/echarts.min.js"></script>
+    <style>
+        body { margin: 0; background-color: #f0f2f5; font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif; }
+        #app { padding: 20px; }
+        .dashboard-header { margin-bottom: 20px; color: #303133; }
+        .stat-card { border-radius: 8px; }
+        .stat-card .title { font-size: 14px; color: #909399; margin-bottom: 10px; }
+        .stat-card .value { font-size: 28px; font-weight: bold; }
+        .safe-text { color: #67C23A; }
+        .warning-text { color: #E6A23C; }
+        .danger-text { color: #F56C6C; }
+        .panel-container { margin-top: 20px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1); }
+        .filter-row { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h2 class="dashboard-header">🛡️ 校园舆情风控控制台</h2>
+
+    <el-row :gutter="20">
+        <el-col :span="6">
+            <el-card shadow="hover" class="stat-card">
+                <div class="title">总解析消息数</div>
+                <div class="value">{{ tableData.length }}</div>
+            </el-card>
+        </el-col>
+        <el-col :span="6">
+            <el-card shadow="hover" class="stat-card">
+                <div class="title">✅ 安全放行 (0分)</div>
+                <div class="value safe-text">{{ safeCount }}</div>
+            </el-card>
+        </el-col>
+        <el-col :span="6">
+            <el-card shadow="hover" class="stat-card">
+                <div class="title">⚠️ 预警观察 (1-9分)</div>
+                <div class="value warning-text">{{ warningCount }}</div>
+            </el-card>
+        </el-col>
+        <el-col :span="6">
+            <el-card shadow="hover" class="stat-card">
+                <div class="title">🚨 危险斩杀 (≥10分)</div>
+                <div class="value danger-text">{{ dangerCount }}</div>
+            </el-card>
+        </el-col>
+    </el-row>
+
+    <div class="panel-container">
+        <div style="font-weight: bold; font-size: 16px; margin-bottom: 15px;">📝 实时舆情录入验证</div>
+        <el-input
+                v-model="inputText"
+                :rows="4"
+                type="textarea"
+                placeholder="请粘贴你想测试的学校通知，支持多行批量输入，每按一次回车将被视作一条独立的消息..."
+        ></el-input>
+        <div style="margin-top: 15px; text-align: right;">
+            <el-button type="primary" @click="submitRealTimeText" :loading="isSubmitting">
+                发送至 AC 自动机进行分析
+            </el-button>
+        </div>
+    </div>
+
+    <div class="panel-container" id="mainChart" style="height: 350px;"></div>
+
+    <div class="panel-container">
+        <div class="filter-row">
+            <span style="font-weight: bold; font-size: 16px;">消息明细日志</span>
+            <el-radio-group v-model="filterLevel" size="small">
+                <el-radio-button label="全部">全部</el-radio-button>
+                <el-radio-button label="安全">安全</el-radio-button>
+                <el-radio-button label="预警">预警</el-radio-button>
+                <el-radio-button label="危险">危险</el-radio-button>
+            </el-radio-group>
+        </div>
+
+        <el-table :data="filteredData" style="width: 100%" height="400" border stripe>
+            <el-table-column prop="id" label="消息ID" width="100"></el-table-column>
+            <el-table-column prop="text" label="原始消息文本" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="score" label="系统得分" width="120" sortable>
+                <template #default="scope">
+                    <span style="font-weight: bold;">{{ scope.row.score }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="风险定级" width="120">
+                <template #default="scope">
+                    <el-tag v-if="scope.row.score === 0" type="success">安全</el-tag>
+                    <el-tag v-else-if="scope.row.score > 0 && scope.row.score < 10" type="warning">预警</el-tag>
+                    <el-tag v-else type="danger">危险</el-tag>
+                </template>
+            </el-table-column>
+        </el-table>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted } = Vue;
+    const { ElMessage } = ElementPlus; // 引入全局消息提示
+
+    const app = createApp({
+        setup() {
+            const filterLevel = ref('全部');
+            const tableData = ref([]);
+            const inputText = ref('');
+            const isSubmitting = ref(false);
+            let myChart = null; // 保存 ECharts 实例
+
+            // 模拟一个递增的 ID，确保表格里的数据不会重复
+            let currentId = 1000;
+
+            // 核心逻辑：发起请求并更新数据
+            const analyzeTexts = async (textsArray) => {
+                try {
+                    const response = await fetch('http://127.0.0.1:8180/test/sensitive_filter', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(textsArray)
+                    });
+
+                    if (!response.ok) throw new Error('后端接口报错');
+
+                    const scores = await response.json();
+
+                    // 组装新数据
+                    const newData = [];
+                    for (let i = 0; i < textsArray.length; i++) {
+                        currentId++;
+                        newData.push({
+                            id: currentId,
+                            text: textsArray[i],
+                            score: scores[i]
+                        });
+                    }
+
+                    // 【关键操作】将新进来的数据插入到表格的最前面
+                    tableData.value.unshift(...newData);
+
+                    // 重新绘制图表
+                    initChart();
+
+                    return true;
+                } catch (error) {
+                    console.error('请求失败:', error);
+                    ElMessage.error('前端请求失败！请检查 IDEA 后端是否启动，及跨域注解。');
+                    return false;
+                }
+            };
+
+            // 提交文本框内的实时数据
+            const submitRealTimeText = async () => {
+                if (!inputText.value.trim()) {
+                    ElMessage.warning('不要发送空文本呀！');
+                    return;
+                }
+
+                // 以回车符进行分割，去除空行
+                const newTexts = inputText.value.split('\n').map(t => t.trim()).filter(t => t !== '');
+                if (newTexts.length === 0) return;
+
+                isSubmitting.value = true;
+                const success = await analyzeTexts(newTexts);
+
+                if (success) {
+                    ElMessage.success(`成功解析 ${newTexts.length} 条数据，看板已更新！`);
+                    inputText.value = ''; // 提交成功后清空输入框
+                }
+                isSubmitting.value = false;
+            };
+
+            // 计算属性
+            const safeCount = computed(() => tableData.value.filter(item => item.score === 0).length);
+            const warningCount = computed(() => tableData.value.filter(item => item.score > 0 && item.score < 10).length);
+            const dangerCount = computed(() => tableData.value.filter(item => item.score >= 10).length);
+
+            const filteredData = computed(() => {
+                if (filterLevel.value === '安全') return tableData.value.filter(item => item.score === 0);
+                if (filterLevel.value === '预警') return tableData.value.filter(item => item.score > 0 && item.score < 10);
+                if (filterLevel.value === '危险') return tableData.value.filter(item => item.score >= 10);
+                return tableData.value;
+            });
+
+            // 初始化或更新图表
+            const initChart = () => {
+                const chartDom = document.getElementById('mainChart');
+                if (!myChart) myChart = echarts.init(chartDom);
+
+                const bins = [0, 0, 0, 0];
+                tableData.value.forEach(item => {
+                    if (item.score === 0) bins[0]++;
+                    else if (item.score <= 5) bins[1]++;
+                    else if (item.score <= 9) bins[2]++;
+                    else bins[3]++;
+                });
+
+                const option = {
+                    title: { text: '真实敏感词得分频次分布图', left: 'center' },
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                    xAxis: { type: 'category', data: ['0分 (绝对安全)', '1-5分 (低危)', '6-9分 (中危)', '≥10分 (高危斩杀)'] },
+                    yAxis: { type: 'value', name: '累计消息条数' },
+                    series: [{
+                        data: [
+                            { value: bins[0], itemStyle: { color: '#67C23A' } },
+                            { value: bins[1], itemStyle: { color: '#E6A23C' } },
+                            { value: bins[2], itemStyle: { color: '#F56C6C' } },
+                            { value: bins[3], itemStyle: { color: '#b91c1c' } }
+                        ],
+                        type: 'bar',
+                        barWidth: '40%',
+                        label: { show: true, position: 'top' }
+                    }]
+                };
+                myChart.setOption(option);
+                window.addEventListener('resize', () => myChart.resize());
+            };
+
+            onMounted(() => {
+                // 初始化图表结构（此时是空的，等你手动填入数据）
+                setTimeout(initChart, 100);
+            });
+
+            return { tableData, filterLevel, safeCount, warningCount, dangerCount, filteredData, inputText, submitRealTimeText, isSubmitting };
+        }
+    });
+
+    app.use(ElementPlus);
+    app.mount('#app');
+</script>
+</body>
+</html>

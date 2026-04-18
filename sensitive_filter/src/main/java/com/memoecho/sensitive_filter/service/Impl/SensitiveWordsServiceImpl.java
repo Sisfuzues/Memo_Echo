@@ -125,7 +125,7 @@ public class SensitiveWordsServiceImpl implements SensitiveWordsService {
         for(AhoCorasickDoubleArrayTrie.Hit<SensitiveWords> hit:res){
             resTotal += hit.value.getValue();
         }
-        System.out.println(resTotal);
+//        System.out.println(resTotal);
 
         // 是否被斩杀
         msg.setFilterScore(resTotal);
