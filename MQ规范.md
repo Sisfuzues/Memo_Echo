@@ -22,12 +22,12 @@
 
 ## 1. 群消息转日程
 
-### 1.1 群聊消息待处理事件 
+### 1.1 群聊消息待处理事件
 - **事件描述**: `bot_gateway` 收到群聊消息，发送给 `sensitive_filter` 模块进行综合过滤。
 - **发布方 (Producer)**: `bot_gateway`
 - **订阅方 (Consumer)**: `sensitive_filter`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_bot_messages`
+  - **Topic / Exchange**: `topic_msg_raw`
   - **Tag / RoutingKey**: `group_msg_received`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -54,7 +54,7 @@
 - **发布方 (Producer)**: `sensitive_filter`
 - **订阅方 (Consumer)**: `ai_brain`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_bot_messages`
+  - **Topic / Exchange**: `topic_msg_clean`
   - **Tag / RoutingKey**: `group_msg_filtered`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -81,7 +81,7 @@
 - **发布方 (Producer)**: `ai_brain`
 - **订阅方 (Consumer)**: `persistence`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_bot_messages`
+  - **Topic / Exchange**: `topic_schedule_extracted`
   - **Tag / RoutingKey**: `group_msg_extracted`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -113,7 +113,7 @@
 - **发布方 (Producer)**: `sensistive_filter`
 - **订阅方 (Consumer)**: `persistence`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_bot_messages`
+  - **Topic / Exchange**: `topic_security_alerts`
   - **Tag / RoutingKey**: `group_msg_unsafe`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -144,7 +144,7 @@
 - **发布方 (Producer)**: `bot_gateway`
 - **订阅方 (Consumer)**: `sensitive_filter`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_group_needs`
+  - **Topic / Exchange**: `topic_group_needs_raw`
   - **Tag / RoutingKey**: `group_msg_received`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -171,7 +171,7 @@
 - **发布方 (Producer)**: `sensitive_filter`
 - **订阅方 (Consumer)**: `ai_brain`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_group_needs`
+  - **Topic / Exchange**: `topic_group_needs_clean`
   - **Tag / RoutingKey**: `group_msg_filtered`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -198,7 +198,7 @@
 - **发布方 (Producer)**: `persistence`
 - **订阅方 (Consumer)**: `bot_gateway`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_group_needs`
+  - **Topic / Exchange**: `topic_group_needs_result`
   - **Tag / RoutingKey**: `group_msg_result`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -221,7 +221,7 @@
 - **发布方 (Producer)**: `bot_gateway`
 - **订阅方 (Consumer)**: `sensitive_filter`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_user_needs`
+  - **Topic / Exchange**: `topic_user_needs_raw`
   - **Tag / RoutingKey**: `private_msg_received`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -247,7 +247,7 @@
 - **发布方 (Producer)**: `sensitive_filter`
 - **订阅方 (Consumer)**: `ai_brain`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_user_needs`
+  - **Topic / Exchange**: `topic_user_needs_clean`
   - **Tag / RoutingKey**: `private_msg_filtered`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -273,7 +273,7 @@
 - **发布方 (Producer)**: `persistence`
 - **订阅方 (Consumer)**: `bot_gateway`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_user_needs`
+  - **Topic / Exchange**: `topic_user_needs_result`
   - **Tag / RoutingKey**: `private_msg_result`
 - **业务载荷 (Data Payload)**:
   ```json

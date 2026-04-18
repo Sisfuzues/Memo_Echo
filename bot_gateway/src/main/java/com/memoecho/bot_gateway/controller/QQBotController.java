@@ -50,13 +50,13 @@ public class QQBotController {
         String rawMessage = receivedMessage.getRawMessage();
 
         // 设置消息发送的 topic tag key
-        String topic = "bot_gateway-out-1_1";
+        String topic = "bot_gateway-out-1";
         String tag = "group_msg_received";
         String key = receivedMessage.getMessageId().toString();  // 用messageID来存储
         if(rawMessage.contains(queryAt)){
             String messageType = receivedMessage.getMessageType();
             topic = Objects.equals(messageType, "group") ?
-                    "bot_gateway-output-2_1":"bot_gateway-output-3_1";
+                    "bot_gateway-output-2":"bot_gateway-output-3";
             tag = Objects.equals(messageType,"group")?
                     "group_msg_received":"private_msg_received";
         }

@@ -1,6 +1,7 @@
-package com.memoecho.bot_gateway.service;
+package com.memoecho.bot_gateway.service.Impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.memoecho.bot_gateway.service.QQBotMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 @Slf4j(topic = "QQBotMessage")
 @Service
-public class QQBotMessageServiceImpl implements QQBotMessageService{
+public class QQBotMessageServiceImpl implements QQBotMessageService {
     private final RestTemplate restTemplate;
 
     private final String API_BASE = "http://localhost:3011";

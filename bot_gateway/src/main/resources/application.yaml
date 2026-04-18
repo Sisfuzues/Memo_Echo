@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: bot_gateway # YAML 注释必须用 #
+    name: bot_gateway
 
   cloud:
     nacos:
@@ -14,14 +14,14 @@ spring:
 # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
     stream:
       bindings:
-        bot_gateway-out-1_1:
-          destination: topic_bot_messages
+        bot_gateway-out-1:
+          destination: topic_msg_raw
           content-type: application/json
-        bot_gateway-out-2_1:
-          destination: topic_group_needs
+        bot_gateway-out-2:
+          destination: topic_group_needs_raw
           content-type: application/json
-        bot_gateway-out-3_1:
-          destination: topic_user_needs
+        bot_gateway-out-3:
+          destination: topic_user_needs_raw
           content-type: application/json
 
         rocketmq:

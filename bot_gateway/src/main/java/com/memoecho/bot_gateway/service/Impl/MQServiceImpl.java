@@ -1,5 +1,6 @@
-package com.memoecho.bot_gateway.service;
+package com.memoecho.bot_gateway.service.Impl;
 
+import com.memoecho.bot_gateway.service.MQService;
 import com.memoecho.memo_echo_apis.dto.ReceivedMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class MQServiceImpl implements MQService{
+public class MQServiceImpl implements MQService {
     @Autowired
     private StreamBridge streamBridge;
 
