@@ -3,13 +3,28 @@ server:
 
 spring:
   application:
-    name: bot_gateway // 微服务名字
+    name: bot_gateway # YAML 注释必须用 #
 
   cloud:
     nacos:
-      discover:
-        server-addr: 127.0.0.1:8848 // nacos地址 端口
+      discovery: # 必须是 discovery
+        server-addr: 127.0.0.1:8848 # Nacos 的本地地址
+
+# 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
+# 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
     stream:
-      rocketmq:
-        binder:
-          name-server: 127.0.0.1:9090 //RocketMq 地址
+      bindings:
+        bot_gateway-out-1_1:
+          destination: topic_bot_messages
+          content-type: application/json
+        bot_gateway-out-2_1:
+          destination: topic_group_needs
+          content-type: application/json
+        bot_gateway-out-3_1:
+          destination: topic_user_needs
+          content-type: application/json
+
+        rocketmq:
+          binder:
+            name-server: 127.0.0.1:9876
+            vip-channel-enabled: false
