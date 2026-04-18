@@ -3,97 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>校园舆情与敏感词风控大屏</title>
+    <title>校园舆情百分制风控大屏</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
     <script src="https://unpkg.com/element-plus"></script>
     <script src="https://unpkg.com/echarts/dist/echarts.min.js"></script>
     <style>
-        body { margin: 0; background-color: #f0f2f5; font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif; }
-        #app { padding: 20px; }
-        .dashboard-header { margin-bottom: 20px; color: #303133; }
-        .stat-card { border-radius: 8px; }
-        .stat-card .title { font-size: 14px; color: #909399; margin-bottom: 10px; }
-        .stat-card .value { font-size: 28px; font-weight: bold; }
-        .safe-text { color: #67C23A; }
-        .warning-text { color: #E6A23C; }
-        .danger-text { color: #F56C6C; }
-        .panel-container { margin-top: 20px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1); }
-        .filter-row { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
+        body { margin: 0; background-color: #f5f7fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        #app { padding: 25px; max-width: 1400px; margin: 0 auto; }
+        .dashboard-header { margin-bottom: 25px; color: #1f2f3d; display: flex; align-items: center; }
+        .stat-card { border-radius: 12px; border: none; transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card .title { font-size: 13px; color: #8492a6; margin-bottom: 8px; font-weight: bold; }
+        .stat-card .value { font-size: 32px; font-weight: 800; }
+        .color-safe { color: #67C23A; }
+        .color-low { color: #409EFF; }
+        .color-mid { color: #E6A23C; }
+        .color-high { color: #F56C6C; }
+        .panel-container { margin-top: 24px; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .chart-box { height: 400px; width: 100%; }
+        .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 <div id="app">
-    <h2 class="dashboard-header">🛡️ 校园舆情风控控制台</h2>
+    <div class="dashboard-header">
+        <el-icon :size="30" style="margin-right: 10px; color: #409EFF;"><Monitor /></el-icon>
+        <h2 style="margin: 0;">校园舆情百分制风控引擎 (ACDAT 实战分析)</h2>
+    </div>
 
     <el-row :gutter="20">
-        <el-col :span="6">
-            <el-card shadow="hover" class="stat-card">
-                <div class="title">总解析消息数</div>
+        <el-col :span="4">
+            <el-card shadow="never" class="stat-card">
+                <div class="title">总解析记录</div>
                 <div class="value">{{ tableData.length }}</div>
             </el-card>
         </el-col>
-        <el-col :span="6">
-            <el-card shadow="hover" class="stat-card">
-                <div class="title">✅ 安全放行 (0分)</div>
-                <div class="value safe-text">{{ safeCount }}</div>
+        <el-col :span="5">
+            <el-card shadow="never" class="stat-card">
+                <div class="title">✅ 绝对安全 (0分)</div>
+                <div class="value color-safe">{{ stats.safe }}</div>
             </el-card>
         </el-col>
-        <el-col :span="6">
-            <el-card shadow="hover" class="stat-card">
-                <div class="title">⚠️ 预警观察 (1-9分)</div>
-                <div class="value warning-text">{{ warningCount }}</div>
+        <el-col :span="5">
+            <el-card shadow="never" class="stat-card">
+                <div class="title">🔵 低危预警 (1-30)</div>
+                <div class="value color-low">{{ stats.low }}</div>
             </el-card>
         </el-col>
-        <el-col :span="6">
-            <el-card shadow="hover" class="stat-card">
-                <div class="title">🚨 危险斩杀 (≥10分)</div>
-                <div class="value danger-text">{{ dangerCount }}</div>
+        <el-col :span="5">
+            <el-card shadow="never" class="stat-card">
+                <div class="title">🟡 中危审查 (31-70)</div>
+                <div class="value color-mid">{{ stats.mid }}</div>
+            </el-card>
+        </el-col>
+        <el-col :span="5">
+            <el-card shadow="never" class="stat-card">
+                <div class="title">🔴 高危斩杀 (71-100+)</div>
+                <div class="value color-high">{{ stats.high }}</div>
             </el-card>
         </el-col>
     </el-row>
 
     <div class="panel-container">
-        <div style="font-weight: bold; font-size: 16px; margin-bottom: 15px;">📝 实时舆情录入验证</div>
+        <div style="font-weight: bold; font-size: 15px; margin-bottom: 12px; color: #606266;">📫 实时文本投递 (支持批量粘贴)</div>
         <el-input
                 v-model="inputText"
-                :rows="4"
+                :rows="5"
                 type="textarea"
-                placeholder="请粘贴你想测试的学校通知，支持多行批量输入，每按一次回车将被视作一条独立的消息..."
+                placeholder="在此粘贴学校通知或历史系文献摘要... 每行将被视为独立样本进行算分。"
         ></el-input>
-        <div style="margin-top: 15px; text-align: right;">
-            <el-button type="primary" @click="submitRealTimeText" :loading="isSubmitting">
-                发送至 AC 自动机进行分析
+        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; color: #909399;">后端接口：http://127.0.0.1:8180/test/sensitive_filter</span>
+            <el-button type="primary" size="large" @click="handleAnalyze" :loading="loading" style="padding: 0 40px;">
+                立即分析分值走向
             </el-button>
         </div>
     </div>
 
-    <div class="panel-container" id="mainChart" style="height: 350px;"></div>
+    <div class="panel-container">
+        <div id="trendChart" class="chart-box"></div>
+    </div>
 
     <div class="panel-container">
-        <div class="filter-row">
-            <span style="font-weight: bold; font-size: 16px;">消息明细日志</span>
-            <el-radio-group v-model="filterLevel" size="small">
-                <el-radio-button label="全部">全部</el-radio-button>
-                <el-radio-button label="安全">安全</el-radio-button>
-                <el-radio-button label="预警">预警</el-radio-button>
-                <el-radio-button label="危险">危险</el-radio-button>
+        <div class="filter-header">
+            <span style="font-weight: bold; color: #606266;">📋 风险明细列表</span>
+            <el-radio-group v-model="filterTag" size="small">
+                <el-radio-button label="全部"></el-radio-button>
+                <el-radio-button label="安全"></el-radio-button>
+                <el-radio-button label="风险"></el-radio-button>
             </el-radio-group>
         </div>
-
-        <el-table :data="filteredData" style="width: 100%" height="400" border stripe>
-            <el-table-column prop="id" label="消息ID" width="100"></el-table-column>
-            <el-table-column prop="text" label="原始消息文本" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="score" label="系统得分" width="120" sortable>
+        <el-table :data="displayData" style="width: 100%" height="450" border stripe>
+            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+            <el-table-column prop="text" label="消息原文内容" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="score" label="百分制得分" width="120" sortable>
                 <template #default="scope">
-                    <span style="font-weight: bold;">{{ scope.row.score }}</span>
+                    <b :class="getScoreClass(scope.row.score)">{{ scope.row.score }}</b>
                 </template>
             </el-table-column>
-            <el-table-column label="风险定级" width="120">
+            <el-table-column label="定级" width="120">
                 <template #default="scope">
-                    <el-tag v-if="scope.row.score === 0" type="success">安全</el-tag>
-                    <el-tag v-else-if="scope.row.score > 0 && scope.row.score < 10" type="warning">预警</el-tag>
-                    <el-tag v-else type="danger">危险</el-tag>
+                    <el-tag :type="getTagType(scope.row.score)" effect="dark" size="small">
+                        {{ getLevelLabel(scope.row.score) }}
+                    </el-tag>
                 </template>
             </el-table-column>
         </el-table>
@@ -101,134 +114,136 @@
 </div>
 
 <script>
-    const { createApp, ref, computed, onMounted } = Vue;
-    const { ElMessage } = ElementPlus; // 引入全局消息提示
+    const { createApp, ref, computed, onMounted, nextTick } = Vue;
+    const { ElMessage } = ElementPlus;
 
     const app = createApp({
         setup() {
-            const filterLevel = ref('全部');
-            const tableData = ref([]);
             const inputText = ref('');
-            const isSubmitting = ref(false);
-            let myChart = null; // 保存 ECharts 实例
+            const tableData = ref([]);
+            const loading = ref(false);
+            const filterTag = ref('全部');
+            let chartInstance = null;
+            let idCounter = 10001;
 
-            // 模拟一个递增的 ID，确保表格里的数据不会重复
-            let currentId = 1000;
-
-            // 核心逻辑：发起请求并更新数据
-            const analyzeTexts = async (textsArray) => {
-                try {
-                    const response = await fetch('http://127.0.0.1:8180/test/sensitive_filter', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(textsArray)
-                    });
-
-                    if (!response.ok) throw new Error('后端接口报错');
-
-                    const scores = await response.json();
-
-                    // 组装新数据
-                    const newData = [];
-                    for (let i = 0; i < textsArray.length; i++) {
-                        currentId++;
-                        newData.push({
-                            id: currentId,
-                            text: textsArray[i],
-                            score: scores[i]
-                        });
-                    }
-
-                    // 【关键操作】将新进来的数据插入到表格的最前面
-                    tableData.value.unshift(...newData);
-
-                    // 重新绘制图表
-                    initChart();
-
-                    return true;
-                } catch (error) {
-                    console.error('请求失败:', error);
-                    ElMessage.error('前端请求失败！请检查 IDEA 后端是否启动，及跨域注解。');
-                    return false;
+            // 统计数据
+            const stats = computed(() => {
+                return {
+                    safe: tableData.value.filter(d => d.score === 0).length,
+                    low: tableData.value.filter(d => d.score > 0 && d.score <= 30).length,
+                    mid: tableData.value.filter(d => d.score > 30 && d.score <= 70).length,
+                    high: tableData.value.filter(d => d.score > 70).length
                 }
-            };
+            });
 
-            // 提交文本框内的实时数据
-            const submitRealTimeText = async () => {
-                if (!inputText.value.trim()) {
-                    ElMessage.warning('不要发送空文本呀！');
-                    return;
-                }
-
-                // 以回车符进行分割，去除空行
-                const newTexts = inputText.value.split('\n').map(t => t.trim()).filter(t => t !== '');
-                if (newTexts.length === 0) return;
-
-                isSubmitting.value = true;
-                const success = await analyzeTexts(newTexts);
-
-                if (success) {
-                    ElMessage.success(`成功解析 ${newTexts.length} 条数据，看板已更新！`);
-                    inputText.value = ''; // 提交成功后清空输入框
-                }
-                isSubmitting.value = false;
-            };
-
-            // 计算属性
-            const safeCount = computed(() => tableData.value.filter(item => item.score === 0).length);
-            const warningCount = computed(() => tableData.value.filter(item => item.score > 0 && item.score < 10).length);
-            const dangerCount = computed(() => tableData.value.filter(item => item.score >= 10).length);
-
-            const filteredData = computed(() => {
-                if (filterLevel.value === '安全') return tableData.value.filter(item => item.score === 0);
-                if (filterLevel.value === '预警') return tableData.value.filter(item => item.score > 0 && item.score < 10);
-                if (filterLevel.value === '危险') return tableData.value.filter(item => item.score >= 10);
+            const displayData = computed(() => {
+                if (filterTag.value === '安全') return tableData.value.filter(d => d.score === 0);
+                if (filterTag.value === '风险') return tableData.value.filter(d => d.score > 0);
                 return tableData.value;
             });
 
-            // 初始化或更新图表
-            const initChart = () => {
-                const chartDom = document.getElementById('mainChart');
-                if (!myChart) myChart = echarts.init(chartDom);
+            // 调用 Java 后端
+            const handleAnalyze = async () => {
+                const lines = inputText.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                if (lines.length === 0) return ElMessage.warning('请输入有效文本');
 
-                const bins = [0, 0, 0, 0];
-                tableData.value.forEach(item => {
-                    if (item.score === 0) bins[0]++;
-                    else if (item.score <= 5) bins[1]++;
-                    else if (item.score <= 9) bins[2]++;
-                    else bins[3]++;
+                loading.value = true;
+                try {
+                    const res = await fetch('http://127.0.0.1:8180/test/sensitive_filter', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(lines)
+                    });
+                    const scores = await res.json();
+
+                    const processed = lines.map((t, i) => ({
+                        id: idCounter++,
+                        text: t,
+                        score: scores[i]
+                    }));
+
+                    tableData.value.unshift(...processed);
+                    inputText.value = '';
+                    updateChart();
+                    ElMessage.success(`分析完成，新增 ${lines.length} 条记录`);
+                } catch (e) {
+                    ElMessage.error('无法连接后端，请检查 8180 端口及 @CrossOrigin 注解');
+                } finally {
+                    loading.value = false;
+                }
+            };
+
+            // 更新 0-100 分分布折线图
+            const updateChart = () => {
+                if (!chartInstance) chartInstance = echarts.init(document.getElementById('trendChart'));
+
+                // 构造 0-100 的计数桶
+                const bins = new Array(101).fill(0);
+                tableData.value.forEach(d => {
+                    const s = Math.min(d.score, 100);
+                    bins[s]++;
                 });
 
                 const option = {
-                    title: { text: '真实敏感词得分频次分布图', left: 'center' },
-                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-                    xAxis: { type: 'category', data: ['0分 (绝对安全)', '1-5分 (低危)', '6-9分 (中危)', '≥10分 (高危斩杀)'] },
-                    yAxis: { type: 'value', name: '累计消息条数' },
+                    tooltip: { trigger: 'axis', formatter: '<b>{b}分</b><br/>消息数：{c}条' },
+                    title: { text: '风险得分走向分布曲线 (0-100)', left: 'center', textStyle: { color: '#606266' } },
+                    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                    xAxis: {
+                        type: 'category',
+                        data: Array.from({length: 101}, (_, i) => i),
+                        axisLabel: { interval: 9 }, // 每隔10分显示一个刻度
+                        boundaryGap: false
+                    },
+                    yAxis: { type: 'value', minInterval: 1 },
                     series: [{
-                        data: [
-                            { value: bins[0], itemStyle: { color: '#67C23A' } },
-                            { value: bins[1], itemStyle: { color: '#E6A23C' } },
-                            { value: bins[2], itemStyle: { color: '#F56C6C' } },
-                            { value: bins[3], itemStyle: { color: '#b91c1c' } }
-                        ],
-                        type: 'bar',
-                        barWidth: '40%',
-                        label: { show: true, position: 'top' }
+                        name: '频次',
+                        type: 'line',
+                        smooth: true,
+                        showSymbol: false,
+                        data: bins,
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(64, 158, 255, 0.5)' },
+                                { offset: 1, color: 'rgba(64, 158, 255, 0)' }
+                            ])
+                        },
+                        lineStyle: { width: 3, color: '#409EFF' }
                     }]
                 };
-                myChart.setOption(option);
-                window.addEventListener('resize', () => myChart.resize());
+                chartInstance.setOption(option);
+            };
+
+            // 辅助函数
+            const getScoreClass = (s) => {
+                if (s === 0) return 'color-safe';
+                if (s <= 30) return 'color-low';
+                if (s <= 70) return 'color-mid';
+                return 'color-high';
+            };
+            const getTagType = (s) => {
+                if (s === 0) return 'success';
+                if (s <= 30) return 'info';
+                if (s <= 70) return 'warning';
+                return 'danger';
+            };
+            const getLevelLabel = (s) => {
+                if (s === 0) return '安全';
+                if (s <= 30) return '低危';
+                if (s <= 70) return '中危';
+                return '高危';
             };
 
             onMounted(() => {
-                // 初始化图表结构（此时是空的，等你手动填入数据）
-                setTimeout(initChart, 100);
+                updateChart();
+                window.addEventListener('resize', () => chartInstance && chartInstance.resize());
             });
 
-            return { tableData, filterLevel, safeCount, warningCount, dangerCount, filteredData, inputText, submitRealTimeText, isSubmitting };
+            return {
+                inputText, tableData, loading, stats, displayData, filterTag,
+                handleAnalyze, getScoreClass, getTagType, getLevelLabel
+            };
         }
     });
-
     app.use(ElementPlus);
     app.mount('#app');
 </script>
