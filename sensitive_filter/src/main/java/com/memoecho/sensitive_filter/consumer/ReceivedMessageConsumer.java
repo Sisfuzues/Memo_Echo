@@ -25,17 +25,19 @@ public class ReceivedMessageConsumer implements Consumer<Message<ReceivedMessage
 
         // 是否被斩杀
         String topic,tag,key;
-        topic = "sensitive_filter-out-1";
-        tag = "group_msg_filtered";
         key = payload.getMessageId().toString();
-        if(sensitiveWordsService.sensitiveWordsKill(rawMessage)){
+        if(sensitiveWordsService.sensitiveWordsKill(payload)){
             payload.setFilterStatus(ReceivedMessage.FilterStatus.UNSAFE);
             topic = "topic_security_alerts";
             tag = "group_msg_unsafe";
+            mqService.sendToMQ(payload,topic,tag,key);
         }else{
             payload.setFilterStatus(ReceivedMessage.FilterStatus.SAFE);
         }
 
+        // 不管有没有筛选过，都发送给AI
+        topic = "sensitive_filter-out-1";
+        tag = "group_msg_filtered";
         mqService.sendToMQ(payload,topic,tag,key);
     }
 }

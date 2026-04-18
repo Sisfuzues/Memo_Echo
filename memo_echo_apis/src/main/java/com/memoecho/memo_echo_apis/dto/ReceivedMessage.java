@@ -39,6 +39,7 @@ public class ReceivedMessage implements Serializable {
     @JSONField(name = "raw_message")
     private String rawMessage;
     private Sender sender;
+    private int filterScore;
 
     @Builder.Default
     private FilterStatus filterStatus = FilterStatus.UNFILTER; // 这个用来判断有没有经历过筛选

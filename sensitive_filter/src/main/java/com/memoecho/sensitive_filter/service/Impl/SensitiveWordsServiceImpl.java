@@ -1,6 +1,7 @@
 package com.memoecho.sensitive_filter.service.Impl;
 
 import com.hankcs.algorithm.AhoCorasickDoubleArrayTrie;
+import com.memoecho.memo_echo_apis.dto.ReceivedMessage;
 import com.memoecho.sensitive_filter.pojo.SensitiveWords;
 import com.memoecho.sensitive_filter.service.SensitiveWordsService;
 import lombok.extern.slf4j.Slf4j;
@@ -112,19 +113,22 @@ public class SensitiveWordsServiceImpl implements SensitiveWordsService {
     }
 
     @Override
-    public Boolean sensitiveWordsKill(String text) {
+    public boolean sensitiveWordsKill(ReceivedMessage msg) {
+        String text = msg.getRawMessage();
         if(acdat==null || text==null || text.trim().isEmpty()){
-            return true;
+            return false;
         }
         List<AhoCorasickDoubleArrayTrie.Hit<SensitiveWords>> res =
                 acdat.parseText(text);
 
-        int resTotal = res.stream().
-                mapToInt(m -> {
-                    return m.value.getValue();
-                }).sum();
+        int resTotal = 0;
+        for(AhoCorasickDoubleArrayTrie.Hit<SensitiveWords> hit:res){
+            resTotal += hit.value.getValue();
+        }
+        System.out.println(resTotal);
 
         // 是否被斩杀
-        return resTotal <= SensitiveWords.Constant.DANGER_SCORE;
+        msg.setFilterScore(resTotal);
+        return resTotal > SensitiveWords.Constant.DANGER_SCORE;
     }
 }
