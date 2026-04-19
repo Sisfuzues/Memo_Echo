@@ -13,7 +13,7 @@ import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 
 import java.util.List;
 
-public class EchoDemo_2 {
+public class EBDemo_1 {
     private static OpenAiEmbeddingModel embeddingModel = OpenAiEmbeddingModel.builder()
             .apiKey("sk-363167240c50469c823d9e2e72ba8da8")
             .baseUrl("https://dashscope.aliyuncs.com/compatible-mode/v1")
