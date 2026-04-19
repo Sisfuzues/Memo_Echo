@@ -39,6 +39,7 @@ public class ReceivedMessage implements Serializable {
     @JSONField(name = "raw_message")
     private String rawMessage;
     private Sender sender;
+    @JSONField(name = "filter_score")
     private int filterScore;
 
     @Builder.Default
