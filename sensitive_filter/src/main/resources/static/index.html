@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>校园舆情百分制风控大屏</title>
+    <title>校园舆情百分制风控大屏 - # 分隔版</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
     <script src="https://unpkg.com/element-plus"></script>
@@ -29,7 +29,7 @@
 <div id="app">
     <div class="dashboard-header">
         <el-icon :size="30" style="margin-right: 10px; color: #409EFF;"><Monitor /></el-icon>
-        <h2 style="margin: 0;">校园舆情百分制风控引擎 (ACDAT 实战分析)</h2>
+        <h2 style="margin: 0;">校园舆情风控控制台 (# 符号切割版)</h2>
     </div>
 
     <el-row :gutter="20">
@@ -66,15 +66,15 @@
     </el-row>
 
     <div class="panel-container">
-        <div style="font-weight: bold; font-size: 15px; margin-bottom: 12px; color: #606266;">📫 实时文本投递 (支持批量粘贴)</div>
+        <div style="font-weight: bold; font-size: 15px; margin-bottom: 12px; color: #606266;">📫 实时文本投递 (请使用 # 分割不同消息)</div>
         <el-input
                 v-model="inputText"
-                :rows="5"
+                :rows="6"
                 type="textarea"
-                placeholder="在此粘贴学校通知或历史系文献摘要... 每行将被视为独立样本进行算分。"
+                placeholder="在此粘贴 .txt 文件内容。程序将根据 # 符号自动切割消息。例如：第一条消息内容... # 第二条消息内容..."
         ></el-input>
         <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 12px; color: #909399;">后端接口：http://127.0.0.1:8180/test/sensitive_filter</span>
+            <span style="font-size: 12px; color: #909399;">当前切割符：[ # ]</span>
             <el-button type="primary" size="large" @click="handleAnalyze" :loading="loading" style="padding: 0 40px;">
                 立即分析分值走向
             </el-button>
@@ -97,7 +97,7 @@
         <el-table :data="displayData" style="width: 100%" height="450" border stripe>
             <el-table-column prop="id" label="ID" width="80"></el-table-column>
             <el-table-column prop="text" label="消息原文内容" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="score" label="百分制得分" width="120" sortable>
+            <el-table-column prop="score" label="系统打分" width="120" sortable>
                 <template #default="scope">
                     <b :class="getScoreClass(scope.row.score)">{{ scope.row.score }}</b>
                 </template>
@@ -114,7 +114,7 @@
 </div>
 
 <script>
-    const { createApp, ref, computed, onMounted, nextTick } = Vue;
+    const { createApp, ref, computed, onMounted } = Vue;
     const { ElMessage } = ElementPlus;
 
     const app = createApp({
@@ -126,15 +126,12 @@
             let chartInstance = null;
             let idCounter = 10001;
 
-            // 统计数据
-            const stats = computed(() => {
-                return {
-                    safe: tableData.value.filter(d => d.score === 0).length,
-                    low: tableData.value.filter(d => d.score > 0 && d.score <= 30).length,
-                    mid: tableData.value.filter(d => d.score > 30 && d.score <= 70).length,
-                    high: tableData.value.filter(d => d.score > 70).length
-                }
-            });
+            const stats = computed(() => ({
+                safe: tableData.value.filter(d => d.score === 0).length,
+                low: tableData.value.filter(d => d.score > 0 && d.score <= 30).length,
+                mid: tableData.value.filter(d => d.score > 30 && d.score <= 70).length,
+                high: tableData.value.filter(d => d.score > 70).length
+            }));
 
             const displayData = computed(() => {
                 if (filterTag.value === '安全') return tableData.value.filter(d => d.score === 0);
@@ -142,21 +139,23 @@
                 return tableData.value;
             });
 
-            // 调用 Java 后端
+            // 🚨 修改后的核心逻辑：按 # 切割
             const handleAnalyze = async () => {
-                const lines = inputText.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                if (lines.length === 0) return ElMessage.warning('请输入有效文本');
+                // 使用 # 进行分割，并过滤掉分割后的空字符串和纯空格
+                const segments = inputText.value.split('#').map(s => s.trim()).filter(s => s.length > 0);
+
+                if (segments.length === 0) return ElMessage.warning('请输入带 # 分隔符的内容');
 
                 loading.value = true;
                 try {
                     const res = await fetch('http://127.0.0.1:8180/test/sensitive_filter', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(lines)
+                        body: JSON.stringify(segments)
                     });
                     const scores = await res.json();
 
-                    const processed = lines.map((t, i) => ({
+                    const processed = segments.map((t, i) => ({
                         id: idCounter++,
                         text: t,
                         score: scores[i]
@@ -165,83 +164,42 @@
                     tableData.value.unshift(...processed);
                     inputText.value = '';
                     updateChart();
-                    ElMessage.success(`分析完成，新增 ${lines.length} 条记录`);
+                    ElMessage.success(`分析完成，通过 # 切割出 ${segments.length} 条记录`);
                 } catch (e) {
-                    ElMessage.error('无法连接后端，请检查 8180 端口及 @CrossOrigin 注解');
+                    ElMessage.error('无法连接后端，请确保 8180 端口存活及 @CrossOrigin 注解已添加');
                 } finally {
                     loading.value = false;
                 }
             };
 
-            // 更新 0-100 分分布折线图
             const updateChart = () => {
                 if (!chartInstance) chartInstance = echarts.init(document.getElementById('trendChart'));
-
-                // 构造 0-100 的计数桶
                 const bins = new Array(101).fill(0);
                 tableData.value.forEach(d => {
-                    const s = Math.min(d.score, 100);
+                    const s = Math.min(Math.max(0, d.score), 100);
                     bins[s]++;
                 });
 
-                const option = {
+                chartInstance.setOption({
                     tooltip: { trigger: 'axis', formatter: '<b>{b}分</b><br/>消息数：{c}条' },
-                    title: { text: '风险得分走向分布曲线 (0-100)', left: 'center', textStyle: { color: '#606266' } },
-                    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-                    xAxis: {
-                        type: 'category',
-                        data: Array.from({length: 101}, (_, i) => i),
-                        axisLabel: { interval: 9 }, // 每隔10分显示一个刻度
-                        boundaryGap: false
-                    },
+                    title: { text: '风险得分走向分布曲线 (0-100)', left: 'center' },
+                    xAxis: { type: 'category', data: Array.from({length: 101}, (_, i) => i), axisLabel: { interval: 9 }, boundaryGap: false },
                     yAxis: { type: 'value', minInterval: 1 },
                     series: [{
-                        name: '频次',
-                        type: 'line',
-                        smooth: true,
-                        showSymbol: false,
-                        data: bins,
-                        areaStyle: {
-                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                { offset: 0, color: 'rgba(64, 158, 255, 0.5)' },
-                                { offset: 1, color: 'rgba(64, 158, 255, 0)' }
-                            ])
-                        },
+                        type: 'line', smooth: true, showSymbol: false, data: bins,
+                        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(64, 158, 255, 0.4)' }, { offset: 1, color: 'rgba(64, 158, 255, 0)' }]) },
                         lineStyle: { width: 3, color: '#409EFF' }
                     }]
-                };
-                chartInstance.setOption(option);
+                });
             };
 
-            // 辅助函数
-            const getScoreClass = (s) => {
-                if (s === 0) return 'color-safe';
-                if (s <= 30) return 'color-low';
-                if (s <= 70) return 'color-mid';
-                return 'color-high';
-            };
-            const getTagType = (s) => {
-                if (s === 0) return 'success';
-                if (s <= 30) return 'info';
-                if (s <= 70) return 'warning';
-                return 'danger';
-            };
-            const getLevelLabel = (s) => {
-                if (s === 0) return '安全';
-                if (s <= 30) return '低危';
-                if (s <= 70) return '中危';
-                return '高危';
-            };
+            const getScoreClass = (s) => s === 0 ? 'color-safe' : (s <= 30 ? 'color-low' : (s <= 70 ? 'color-mid' : 'color-high'));
+            const getTagType = (s) => s === 0 ? 'success' : (s <= 30 ? 'info' : (s <= 70 ? 'warning' : 'danger'));
+            const getLevelLabel = (s) => s === 0 ? '安全' : (s <= 30 ? '低危' : (s <= 70 ? '中危' : '高危'));
 
-            onMounted(() => {
-                updateChart();
-                window.addEventListener('resize', () => chartInstance && chartInstance.resize());
-            });
+            onMounted(() => { updateChart(); window.addEventListener('resize', () => chartInstance && chartInstance.resize()); });
 
-            return {
-                inputText, tableData, loading, stats, displayData, filterTag,
-                handleAnalyze, getScoreClass, getTagType, getLevelLabel
-            };
+            return { inputText, tableData, loading, stats, displayData, filterTag, handleAnalyze, getScoreClass, getTagType, getLevelLabel };
         }
     });
     app.use(ElementPlus);
