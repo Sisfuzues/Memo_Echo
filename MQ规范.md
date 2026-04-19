@@ -22,12 +22,12 @@
 
 ## 1. 群消息转日程
 
-### 1.1 群聊消息待处理事件 
+### 1.1 群聊消息待处理事件
 - **事件描述**: `bot_gateway` 收到群聊消息，发送给 `sensitive_filter` 模块进行综合过滤。
 - **发布方 (Producer)**: `bot_gateway`
 - **订阅方 (Consumer)**: `sensitive_filter`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_bot_messages`
+  - **Topic / Exchange**: `topic_msg_raw`
   - **Tag / RoutingKey**: `group_msg_received`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -54,7 +54,7 @@
 - **发布方 (Producer)**: `sensitive_filter`
 - **订阅方 (Consumer)**: `ai_brain`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_bot_messages`
+  - **Topic / Exchange**: `topic_msg_clean`
   - **Tag / RoutingKey**: `group_msg_filtered`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -81,17 +81,30 @@
 - **发布方 (Producer)**: `ai_brain`
 - **订阅方 (Consumer)**: `persistence`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_bot_messages`
+  - **Topic / Exchange**: `topic_schedule_extracted`
   - **Tag / RoutingKey**: `group_msg_extracted`
 - **业务载荷 (Data Payload)**:
   ```json
   {
-    "original_msg_id": -192837465, // 溯源ID
-    "schedule_time": [1712401200000, 1712401200000], // 提取出的具体时间戳
-    "location": "三教",            // 提取出的地点
-    "event_content": "开会",       // 提取出的事件
-    "participants": "全体同学",   // 参与者
-    "introduce" : "为了庆祝朱宇翔生日，学校邀请..."
+    "originalMsgId": -192837465,     // 溯源ID
+    "userId": 1122334455,            // 必须要有！入库MySQL和鉴权必须用
+    "groupId": 987654321,            // 群号
+    
+    // 1. 结构化业务数据 (交给 MySQL)
+    "schedule": {
+      "startTime": 1712401200000,    // 建议用具体的 startTime 和 endTime，比数组更清晰
+      "endTime": 1712408400000,
+      "location": "三教",
+      "content": "开会",
+      "participants": "全体同学",
+      "introduce": "为了庆祝朱宇翔生日，学校邀请..." 
+    },
+    
+    // 2. 语义向量数据 (交给 Qdrant)
+    "vector": [0.015, -0.022, 0.089, ...], // 1536维浮点数组
+    
+    // 3. 原始切块文本 (存入 Qdrant 的 payload/metadata 中，用于检索后直接返回给 LLM)
+    "chunkText": "【会议】地点：三教；参与：全体同学；内容：开会；补充：为了庆祝朱宇翔生日..."
   }
   ```
 
@@ -100,7 +113,7 @@
 - **发布方 (Producer)**: `sensistive_filter`
 - **订阅方 (Consumer)**: `persistence`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_bot_messages`
+  - **Topic / Exchange**: `topic_security_alerts`
   - **Tag / RoutingKey**: `group_msg_unsafe`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -131,7 +144,7 @@
 - **发布方 (Producer)**: `bot_gateway`
 - **订阅方 (Consumer)**: `sensitive_filter`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_group_needs`
+  - **Topic / Exchange**: `topic_group_needs_raw`
   - **Tag / RoutingKey**: `group_msg_received`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -158,7 +171,7 @@
 - **发布方 (Producer)**: `sensitive_filter`
 - **订阅方 (Consumer)**: `ai_brain`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_group_needs`
+  - **Topic / Exchange**: `topic_group_needs_clean`
   - **Tag / RoutingKey**: `group_msg_filtered`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -185,23 +198,17 @@
 - **发布方 (Producer)**: `persistence`
 - **订阅方 (Consumer)**: `bot_gateway`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_group_needs`
+  - **Topic / Exchange**: `topic_group_needs_result`
   - **Tag / RoutingKey**: `group_msg_result`
 - **业务载荷 (Data Payload)**:
   ```json
   {
     "type" : "user",
     "group_id": "10111",
-    "schedules" :[
-      {
-        "original_msg_id": -192837465, // 溯源ID
-        "schedule_time": [1712401200000, 1712401200000],
-        "location": "三教",            
-        "event_content": "开会",       
-        "participants": "全体同学",   
-        "introduce" : "为了庆祝朱宇翔生日，学校邀请..."
-      }
-    ]
+    "user_id" : null,
+
+    "reply_text" : "最终信息",
+    "original_msgId" : "1231231424143"  // 溯源的Id
   }
   ```
 
@@ -214,7 +221,7 @@
 - **发布方 (Producer)**: `bot_gateway`
 - **订阅方 (Consumer)**: `sensitive_filter`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_user_needs`
+  - **Topic / Exchange**: `topic_user_needs_raw`
   - **Tag / RoutingKey**: `private_msg_received`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -240,7 +247,7 @@
 - **发布方 (Producer)**: `sensitive_filter`
 - **订阅方 (Consumer)**: `ai_brain`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_user_needs`
+  - **Topic / Exchange**: `topic_user_needs_clean`
   - **Tag / RoutingKey**: `private_msg_filtered`
 - **业务载荷 (Data Payload)**:
   ```json
@@ -266,22 +273,16 @@
 - **发布方 (Producer)**: `persistence`
 - **订阅方 (Consumer)**: `bot_gateway`
 - **路由坐标**:
-  - **Topic / Exchange**: `topic_user_needs`
+  - **Topic / Exchange**: `topic_user_needs_result`
   - **Tag / RoutingKey**: `private_msg_result`
 - **业务载荷 (Data Payload)**:
   ```json
   {
     "type" : "user",
-    "user_id": "10111",
-    "schedules" :[
-      {
-        "original_msg_id": -192837465, // 溯源ID
-        "schedule_time": [1712401200000, 1712401200000], 
-        "location": "三教",            
-        "event_content": "开会",       
-        "participants": "全体同学",   
-        "introduce" : "为了庆祝朱宇翔生日，学校邀请..."
-      }
-    ]
+    "group_id": null,
+    "user_id" : "10111",
+
+    "reply_text" : "最终信息",
+    "original_msgId" : "1231231424143"  // 溯源的Id
   }
   ```

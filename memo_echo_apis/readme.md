@@ -182,4 +182,4 @@
 **1. 风险用户画像查询 (`getRiskUserProfile`)**
 * **连接地址**: `GET /api/admin/control/risk-profile/{userId}`
 * **介绍**: 汇总 `persistence` 提供的敏感记录数据，综合判断并生成该用户的风险画像，为是否调用 `blockUser` 接口提供依据。
-* **入参** (Path Variable): `userId` (Longg**
+* **入参** (Path Variable): `userId` (Longg
