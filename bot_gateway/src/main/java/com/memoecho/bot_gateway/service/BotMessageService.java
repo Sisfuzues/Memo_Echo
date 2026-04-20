@@ -1,8 +1,10 @@
 package com.memoecho.bot_gateway.service;
 
-public interface QQBotMessageService {
+import com.alibaba.fastjson2.JSONObject;
+
+public interface BotMessageService {
     /**
-     * QQbot发送群体信息
+     * bot发送群体信息
      * <hr/>
      * 🧩 逻辑：
      * 🛡️ 依赖：
@@ -16,7 +18,7 @@ public interface QQBotMessageService {
 
 
     /**
-     * QQbot发送私人信息
+     * bot发送私人信息
      * <hr/>
      * 🧩 逻辑：
      * 🛡️ 依赖：
@@ -27,4 +29,19 @@ public interface QQBotMessageService {
      * @date 2026/4/13 11:11
      */
     void sendPrivateMessage(Long userId, String txt);
+
+    /**
+     *  处理机器人信息的类型
+     * <hr/>
+     * 🧩 逻辑：
+     * 🛡️ 依赖：
+     * ⚠️ 注意：
+     *
+     * @param  jsonObject 接受到的Json对象
+     * @param  type Json对象中的，消息类型
+     * @author Sisfuzues
+     * @date 2026/4/20 16:02
+     */
+    void processBotEvent(JSONObject jsonObject,String type);
+
 }
