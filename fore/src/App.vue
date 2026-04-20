@@ -1,20 +1,27 @@
 <template>
-  <router-view></router-view>
+  <div class="main-container">
+    <Login v-if="isLoginMode" @toRegister="isLoginMode = false" />
+    <UserRegister v-else @toLogin="isLoginMode = true" />
+  </div>
 </template>
 
 <script setup>
-// 这里可以保持空白
+import { ref } from 'vue';
+import Login from './components/Login.vue';
+import UserRegister from './components/UserRegister.vue';
+
+const isLoginMode = ref(true);
 </script>
 
 <style>
-/* 简单的全局重置 */
-body, html {
+body {
   margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: Arial, sans-serif;
+  background-color: #f5f7fa;
 }
-#app {
-  height: 100%;
+.main-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 </style>
