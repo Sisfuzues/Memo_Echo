@@ -1,4 +1,4 @@
-package com.memoecho.persistence.controller;
+package com.memoecho.persistence.controller.user.admin;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
