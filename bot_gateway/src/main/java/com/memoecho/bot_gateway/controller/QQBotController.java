@@ -13,6 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
+/**
+ * 🛰️ 处理 bot 的各种任务
+ * <hr/>
+ * 🧩 职责：
+ * 🛡️ 关联：
+ * 🗺️ 架构： (MemoEcho)
+ *
+ * @author Sisfuzues
+ * &#064;date  2026/4/19 22:50
+ */
 @Slf4j(topic = "BotReader")
 @RestController
 @RequestMapping("/api/bot")

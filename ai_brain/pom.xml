@@ -70,6 +70,12 @@
             <artifactId>qdrant</artifactId>
             <version>1.21.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.memoecho</groupId>
+            <artifactId>memo_echo_apis</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
