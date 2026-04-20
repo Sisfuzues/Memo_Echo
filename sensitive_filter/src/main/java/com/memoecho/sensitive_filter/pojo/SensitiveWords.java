@@ -16,4 +16,8 @@ public class SensitiveWords implements Serializable {
     public enum Level {
         level1,level2,level3
     }
+
+    public static class Constant{
+        public static final int DANGER_SCORE = 5; // 危险分数
+    }
 }

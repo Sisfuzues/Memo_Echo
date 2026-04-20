@@ -8,6 +8,9 @@ public class PersistenceApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PersistenceApplication.class, args);
+        System.out.println("================");
+        System.out.println("    正在测试     ");
+        System.out.println("================");
     }
 
 }
