@@ -9,6 +9,7 @@ import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
+import org.apache.rocketmq.common.message.Message;
 import org.testcontainers.qdrant.QdrantContainer;
 
 import javax.swing.tree.AbstractLayoutCache;
