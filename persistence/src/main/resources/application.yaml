@@ -4,6 +4,22 @@ server:
 spring:
   application:
     name: persistence
+  mail:
+    host: smtp.163.com
+    port: 465
+    username: 15770936539@163.com
+    password: BVt3d3AAhQtcM4Q5
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 465
+    protocol: smtp
+
 #  data:
 #    redis:
 #      host: 127.0.0.1      # 你的 Ubuntu 本地 Redis 地址
