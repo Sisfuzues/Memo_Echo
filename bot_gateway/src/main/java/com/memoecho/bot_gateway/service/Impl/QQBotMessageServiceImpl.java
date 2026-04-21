@@ -2,6 +2,7 @@ package com.memoecho.bot_gateway.service.Impl;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import com.memoecho.bot_gateway.client.NapcatClient;
 import com.memoecho.bot_gateway.service.BotMessageService;
 import com.memoecho.bot_gateway.service.MQService;
 import com.memoecho.memo_echo_apis.client.PersistenceStatusClient;
@@ -19,36 +20,31 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Slf4j(topic = "QQBotMessage")
+@Slf4j(topic = "QQ机器人服务")
 @Service
 @RequiredArgsConstructor
 public class QQBotMessageServiceImpl implements BotMessageService {
     private final RestTemplate restTemplate;
-    private final String API_BASE = "http://localhost:3011";
     private final PersistenceStatusClient persistenceStatusClient;
+    private final NapcatClient napcatClient;
     private final MQService mqService;
     private final Map<String,Long> cacheHeart = new ConcurrentHashMap<>();
 
     @Override
     public void sendPrivateMessage(Long userId,String txt){
-        String url  = API_BASE + "/send_private_msg";
-
         Map<String,Object> payload = new HashMap<>();
         payload.put("user_id",userId);
         payload.put("message",txt);
 
-        String jsonMessage = JSON.toJSONString(payload);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization","Bearer 1TTQ51pa-Q_Hr7kl");
-
-        HttpEntity<String> request = new HttpEntity<>(jsonMessage,headers);
         try{
-            String response = restTemplate.postForObject(url,request,String.class);
-            log.info("发送给QQ信息成功,返回值：{}", response);
+            JSONObject response = napcatClient.sendPrivateMsg(payload);
+            Long messageId = response.getLong("message_id");
+            if(messageId==null){
+                log.error("消息发送私人失败，未收到消息ID。");
+            }
+            log.info("发送给私人QQ信息成功,消息的ID：{}", messageId);
         } catch (Exception e){
-            log.error("发送失败,",e);
+            log.error("发送私人消息失败,",e);
         }
     }
 
@@ -156,24 +152,20 @@ public class QQBotMessageServiceImpl implements BotMessageService {
 
     @Override
     public void sendGroupMessage(Long groupId,String txt){
-        String url  = API_BASE + "/send_group_msg";
-
         Map<String,Object> payload = new HashMap<>();
         payload.put("group_id",groupId);
         payload.put("message",txt);
 
-        String jsonMessage = JSON.toJSONString(payload);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization","Bearer 1TTQ51pa-Q_Hr7kl");
-
-        HttpEntity<String> request = new HttpEntity<>(jsonMessage,headers);
+        // 调用napcat提供的feign
         try{
-            String response = restTemplate.postForObject(url,request,String.class);
-            log.info("发送信息成功,返回值："+response);
+            JSONObject response = napcatClient.sendGroupMsg(payload);
+            Long messageId = response.getLong("message_id");
+            if(messageId==null){
+                log.error("消息响应失败，请查看。");
+            }
+            log.info("发送群组信息成功, messageId : {}",messageId);
         } catch (Exception e){
-            log.error("发送失败,",e);
+            log.error("发送群组失败,请查看。",e);
         }
     }
 }
