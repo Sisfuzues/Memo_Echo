@@ -4,20 +4,20 @@ server:
 spring:
   application:
     name: persistence
-  data:
-    redis:
-      host: 127.0.0.1      # 你的 Ubuntu 本地 Redis 地址
-      port: 6380           # 默认端口 用于测试，但是正式上线用 6379
-      database: 0          # 默认使用 0 号库
-      password: 123456     # 密码
-      lettuce:             # 🚨 修正：Spring Boot 默认使用 Lettuce 而不是 Jedis
-        pool:
-          max-active: 8    # 最大连接数
-          max-idle: 8      # 最大空闲连接
-          min-idle: 0      # 最小空闲连接
+#  data:
+#    redis:
+#      host: 127.0.0.1      # 你的 Ubuntu 本地 Redis 地址
+#      port: 6380           # 默认端口 用于测试，但是正式上线用 6379
+#      database: 0          # 默认使用 0 号库
+#      password: 123456     # 密码
+#      lettuce:             # 🚨 修正：Spring Boot 默认使用 Lettuce 而不是 Jedis
+#        pool:
+#          max-active: 8    # 最大连接数
+#          max-idle: 8      # 最大空闲连接
+#          min-idle: 0      # 最小空闲连接
   datasource:
     # 🚨 修正：强烈建议在 Linux 环境下数据库名统一用全小写，防止大小写敏感报错
-    url: jdbc:mysql://localhost:3307/memo_echo_persistence?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    url: jdbc:mysql://localhost:3306/memo_echo_persistence?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -25,26 +25,26 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848 # Nacos 的本地地址
-
-    # 🚨 修正：function 必须和 stream 平级！
-    function:
-      definition: UnsafeMsgConsumer                 # 只有定义的组件才能分到MQ的流量
-
-    # 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
-    # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
-    stream:
-      rocketmq:
-        binder:
-          name-server: 127.0.0.1:9876
-          vip-channel-enabled: false
-        bindings:
-          UnsafeMsgConsumer-in-0:
-            consumer:
-              tags: group_msg_unsafe
-      bindings:
-        UnsafeMsgConsumer-in-0:
-          destination: topic_security_alerts
-          group: persistence-group-unsafe
+#
+#    # 🚨 修正：function 必须和 stream 平级！
+#    function:
+#      definition: UnsafeMsgConsumer                 # 只有定义的组件才能分到MQ的流量
+#
+#    # 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
+#    # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
+#    stream:
+#      rocketmq:
+#        binder:
+#          name-server: 127.0.0.1:9876
+#          vip-channel-enabled: false
+#        bindings:
+#          UnsafeMsgConsumer-in-0:
+#            consumer:
+#              tags: group_msg_unsafe
+#      bindings:
+#        UnsafeMsgConsumer-in-0:
+#          destination: topic_security_alerts
+#          group: persistence-group-unsafe
 
 mybatis-plus:
   configuration:
