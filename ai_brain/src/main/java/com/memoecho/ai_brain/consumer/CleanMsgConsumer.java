@@ -29,18 +29,18 @@ public class CleanMsgConsumer implements Consumer<Message<ReceivedMessage>> {
 
     @Override
     public void accept(Message<ReceivedMessage> receivedMsg) {
-        log.info("获取已过滤信息，{}",
-                receivedMsg.getPayload().toString());
-
-        ReceivedMessage payload = receivedMsg.getPayload();
-        ExtractedMessage extractedMessage
-                = unextractedMsgService.extractedMsg(payload);
-
-        String key = payload.getMessageId().toString();
-        boolean res = mqService.
-                sendToMQ(extractedMessage,key);
-        if(!res){
-            log.error("消息未能成功发送，消息 MessageId:{}",key);
-        }
+//        log.info("获取已过滤信息，{}",
+//                receivedMsg.getPayload().toString());
+//
+//        ReceivedMessage payload = receivedMsg.getPayload();
+//        ExtractedMessage extractedMessage
+//                = unextractedMsgService.extractedMsg(payload);
+//
+//        String key = payload.getMessageId().toString();
+//        boolean res = mqService.
+//                sendToMQ(extractedMessage,key);
+//        if(!res){
+//            log.error("消息未能成功发送，消息 MessageId:{}",key);
+//        }
     }
 }

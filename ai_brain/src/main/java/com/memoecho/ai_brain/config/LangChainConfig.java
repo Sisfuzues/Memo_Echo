@@ -1,9 +1,11 @@
 package com.memoecho.ai_brain.config;
 
+import com.memoecho.ai_brain.prompt.ScheduleExtractor;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
+import dev.langchain4j.service.AiServices;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,15 +13,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class LangChainConfig {
     // ===============  AI 模型 ==================
-    @Value("memo-echo.ai.dashscope.api-key")
+    @Value("${memo-echo.ai.dashscope.api-key}")
     private String apiKey;
-    @Value("memo-echo.ai.dashscope.base-url")
+    @Value("${memo-echo.ai.dashscope.base-url}")
     private String baseUrl;
-    @Value("memo-echo.ai.dashscope.model-name")
+    @Value("${memo-echo.ai.dashscope.model-name}")
     private String modelName;
-    @Value("memo-echo.ai.dashscope.chat-model-name")
+    @Value("${memo-echo.ai.dashscope.chat-model-name}")
     private String chatModelName;
-    @Value("memo-echo.ai.dashscope.dimension")
+    @Value("${memo-echo.ai.dashscope.dimension:512}")
     private int dimension;
 
 
@@ -41,14 +43,11 @@ public class LangChainConfig {
                 .build();
     }
 
-
+    // 注册ai服务,springboot 会自动注册上面的对话模型
+    @Bean
+    public ScheduleExtractor scheduleExtractor(ChatModel chatModel){
+        return AiServices.builder(ScheduleExtractor.class)
+                .chatModel(chatModel)
+                .build();
+    }
 }
-
-/*
-memo-echo:
-  ai:
-    qdrant:
-      host: 127.0.0.1                            # 向量数据库地址，这里我们真实部署要替换成真实的网址
-      port: 6334                                 # 端口
-      collection-name: schedule_embeddings       # 向量表名字
- */
