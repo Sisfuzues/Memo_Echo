@@ -14,6 +14,7 @@ public class CAgentdemo_1 {
             .apiKey("sk-363167240c50469c823d9e2e72ba8da8")
             .baseUrl("https://dashscope.aliyuncs.com/compatible-mode/v1")
             .modelName("qwen-max")
+            //.temperature(0.3)//模型温度应靠近0
             .build();
 
     private static OpenAiModerationModel moderationModel = OpenAiModerationModel.builder()
@@ -50,7 +51,7 @@ public class CAgentdemo_1 {
                 );
                 ChatResponse chatResponse_2 = chatModel.chat(chatMessages);
                 System.out.println(chatResponse_2.aiMessage().text());
-                chatMessages.add(chatResponse_2.aiMessage());
+                chatMessages.add(chatResponse_2.aiMessage());//aimessage加入messages队列
             }
         }finally {
             scanner.close();
