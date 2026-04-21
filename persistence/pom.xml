@@ -40,6 +40,16 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
+        <dependency><!--langchain4j-对qdrand api-->
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-qdrant</artifactId>
+            <version>1.12.2-beta22</version>
+        </dependency>
+        <dependency><!--qdrand docker-->
+            <groupId>org.testcontainers</groupId>
+            <artifactId>qdrant</artifactId>
+            <version>1.21.4</version>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

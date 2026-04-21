@@ -1,5 +1,6 @@
 package com.memoecho.persistence.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -13,6 +14,7 @@ import lombok.Data;
  * &#064;date  2026/4/19 22:33
  */
 @Data
+@TableName
 public class User {
     private Long userId;
     private Long qqId;    // qq的id
