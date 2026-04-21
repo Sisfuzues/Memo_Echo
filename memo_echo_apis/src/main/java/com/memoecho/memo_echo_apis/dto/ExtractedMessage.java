@@ -22,6 +22,7 @@ public class ExtractedMessage implements Serializable {
     private String chunkText;
 
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MemoScheduled implements Serializable {

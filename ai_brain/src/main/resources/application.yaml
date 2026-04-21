@@ -28,3 +28,12 @@ spring:
         CleanMsgConsumer-in-0:
           destination: topic_msg_clean
           group: ai_brain_catchGroupMsg
+
+memo-echo:
+  ai:
+    dashscope:
+      api-key: sk-363167240c50469c823d9e2e72ba8da8
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1    # 模型地址
+      model-name: text-embedding-v4                                  # 向量模型名字
+      dimension: 384                                                 # 向量纬度
+      chat-model-name: qwen-plus                                     # 对话模型名字
