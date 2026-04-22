@@ -25,8 +25,8 @@ import java.util.concurrent.ExecutionException;
 
 
 public class EBDemo_2 {
-    private static int port = 6334;//使用的端口协议
-    private static int httpport = 6333;
+    private static int port = 6334;//使用的端口协议 入库与检索时使用
+    private static int httpport = 6333;//建表时使用
     private static String collectionName = "langchain4j-1";//使用的表名
     private static int dimension = 512;//语义向量维度  需要使用模型支持的维度
 
