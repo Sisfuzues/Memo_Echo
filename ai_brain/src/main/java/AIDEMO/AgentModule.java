@@ -14,6 +14,6 @@ public class AgentModule {
 
 
     protected String scheduleValidator(String userText){//可能要将类型转化分离  并且标注成agent并用langchain调用
-
+        return "";
     }
 }
