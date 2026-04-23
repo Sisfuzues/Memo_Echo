@@ -36,27 +36,9 @@ public interface ScheduleExtractor {
             "不能捏造数据。"
     })
     @UserMessage("请从下面输入的文本中提取结构化的日程信息:\n\n {{userInput}}")
-    ExtractedMessage.MemoScheduled  extract(
+    Memo  extract(
         @V("currentTime") String currentTime,
         @V("userInput") String userInput
     );
 }
 
-class MemoScheduled{
-    @Description("用户日程开始时间，" +
-            "要求格式：yyyy-MM-dd HH:mm:ss,必须是标准 ISO 格式")
-    LocalDateTime beginTime;
-    @Description("用户日程结束的时间," +
-            "要求格式：yyyy-MM-dd HH:mm:ss,必须是标准 ISO 格式")
-    LocalDateTime stopTime;
-
-    @Description("相关日程要求的地点,或者网络平台。")
-    String location;
-    @Description("日程相关信息的简单概括。")
-    String content;
-    @Description("日程信息的详细介绍,不能精简," +
-            "且不能出现中国政府不允许的敏感词要详细正式。")
-    String introduce;
-    @Description("日程信息要求的参与日程的人员名单，要准确。")
-    String participants;
-}

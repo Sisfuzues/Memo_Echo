@@ -11,17 +11,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.util.ResourceUtils;
 
 
-@SpringBootTest
 @Slf4j(topic = "测试ai对话模型")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AiBrainApplicationTests {
     @Autowired
     private UnextractedMsgServiceImpl unextractedMsgService;
 
     @Test
-    void testAiService() throws IOException {
+    void testAiService() throws IOException, InterruptedException {
+        Thread.sleep(10000);
         log.info("================== 开始测试 ====================");
         File file =  ResourceUtils.getFile("classpath:documents/data.txt");
 

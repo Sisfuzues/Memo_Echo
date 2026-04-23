@@ -18,7 +18,10 @@ import java.time.LocalDateTime;
 @TableName("memo")
 public class Memo {
     @TableId(type = IdType.INPUT)
-    private Long id;
+    private Long messageId;
+    
+    private Long senderId;
+    private Long groupId;
 
     @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;

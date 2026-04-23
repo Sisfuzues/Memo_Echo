@@ -49,10 +49,3 @@ spring:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 在控制台打印 SQL 语句，非常适合本地调试
-
-  memo-echo:
-    ai:
-      qdrant:
-        host: 127.0.0.1                            # 向量数据库地址，这里我们真实部署要替换成真实的网址
-        port: 6334                                 # 端口
-        collection-name: schedule_embeddings       # 向量表名字

@@ -16,5 +16,5 @@ public interface UnextractedMsgService {
      * @author zhuyuxiang
      * @date 2026/4/19 22:12
      */
-    ExtractedMessage savedMsg(ReceivedMessage msg);
+    Boolean savedMsg(ReceivedMessage msg);
 }
