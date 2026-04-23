@@ -1,5 +1,7 @@
 package com.memoecho.persistence.service;
 
+import com.memoecho.persistence.dto.EmailResponse;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,7 +15,7 @@ public interface CodeMessageService {
     public String generateVerificationCode();
 
     // 验证码校验
-    public boolean verifyCode(String email, String code);
+    public EmailResponse verifyCode(String email, String code);
 
 
 }

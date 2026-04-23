@@ -20,17 +20,17 @@ spring:
             port: 465
     protocol: smtp
 
-#  data:
-#    redis:
-#      host: 127.0.0.1      # 你的 Ubuntu 本地 Redis 地址
-#      port: 6380           # 默认端口 用于测试，但是正式上线用 6379
-#      database: 0          # 默认使用 0 号库
+  data:
+    redis:
+      host: 127.0.0.1      # 你的 Ubuntu 本地 Redis 地址
+      port: 6379           # 默认端口 用于测试，但是正式上线用 6379
+      database: 0          # 默认使用 0 号库
 #      password: 123456     # 密码
-#      lettuce:             # 🚨 修正：Spring Boot 默认使用 Lettuce 而不是 Jedis
-#        pool:
-#          max-active: 8    # 最大连接数
-#          max-idle: 8      # 最大空闲连接
-#          min-idle: 0      # 最小空闲连接
+      lettuce:             # 🚨 修正：Spring Boot 默认使用 Lettuce 而不是 Jedis
+        pool:
+          max-active: 8    # 最大连接数
+          max-idle: 8      # 最大空闲连接
+          min-idle: 0      # 最小空闲连接
   datasource:
     # 🚨 修正：强烈建议在 Linux 环境下数据库名统一用全小写，防止大小写敏感报错
     url: jdbc:mysql://localhost:3306/memo_echo_persistence?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
@@ -41,7 +41,21 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848 # Nacos 的本地地址
-#
+
+jwt:
+  secret: ${JWT_SECRET:c2VjcmV0S2V5Rm9ySld0VG9rZW5HZW5lcmF0aW9uSW5TcHJpbmdCb290QXBwbGljYXRpb24=}
+  expiration: 86400000
+
+security:
+  aes:
+    key: ${AES_KEY:MemoEchoAesSecretKey2026ChangeInProduction}
+  
+  verification-code:
+    code-length: 6
+    expiration-time: 300
+    rate-limit-interval: 60
+    max-daily-count: 5
+
 #    # 🚨 修正：function 必须和 stream 平级！
 #    function:
 #      definition: UnsafeMsgConsumer                 # 只有定义的组件才能分到MQ的流量
@@ -65,3 +79,4 @@ spring:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 在控制台打印 SQL 语句，非常适合本地调试
+

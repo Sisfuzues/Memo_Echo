@@ -91,7 +91,7 @@ public class EmailMessageServiceImpl implements EmailMessageService {
 
     @Override
     public EmailResponse verifyCode(String email, String code) {
-        return null;
+        return codeMessageService.verifyCode(email, code);
     }
 
 }
