@@ -22,7 +22,7 @@ spring:
 #          destination: topic_user_needs
 #          content-type: application/json
       function:
-        definition: botMsgConsumer                 # 只有定义的组件才能分到MQ的流量
+        definition: botMsgConsumer;groupNeedsConsumer;privateNeedsConsumer               # 只有定义的组件才能分到MQ的流量
       rocketmq:
         binder:
           name-server: 127.0.0.1:9876
@@ -31,13 +31,31 @@ spring:
           botMsgConsumer-in-0:
             consumer:
               tags: group_msg_received
+          groupNeedsConsumer-in-0:
+            consumer:
+              tags: group_msg_received
+          privateNeedsConsumer-in-0:
+            consumer:
+              tags: private_msg_received
       bindings:
         botMsgConsumer-in-0:
           destination: topic_msg_raw
           group: sensitive-filter-group-read
+        groupNeedsConsumer-in-0:
+          destination: topic_group_needs_raw
+          group: sensitive-filter-group-read
+        privateNeedsConsumer-in-0:
+          destination: topic_private_needs_raw
+          group: sensitive-filter-private-read
         sensitive_filter-out-1:
           destination: topic_msg_clean
           content-type: application/json
         sensitive_filter-out-2:
           destination: topic_security_alerts
+          content-type: application/json
+        sensitive_filter-out-3:
+          destination: topic_group_needs_clean
+          content-type: application/json
+        sensitive_filter-out-4:
+          destination: topic_user_needs_raw
           content-type: application/json

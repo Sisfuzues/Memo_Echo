@@ -11,7 +11,7 @@ spring:
 
     # 🚨 修正：function 必须和 stream 平级！
     function:
-      definition: CleanMsgConsumer                 # 只有定义的组件才能分到MQ的流量
+      definition: CleanMsgConsumer;CleanGroupRequestConsumer;CleanPrivateRequestConsumer         # 只有定义的组件才能分到MQ的流量
 
     # 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
     # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
@@ -28,6 +28,12 @@ spring:
         CleanMsgConsumer-in-0:
           destination: topic_msg_clean
           group: ai_brain_catchGroupMsg
+        CleanGroupRequestConsumer-in-0:
+          destination: topic_group_needs_clean
+          group: ai_brain_catchGroupRequest
+        CleanPrivateRequestConsumer-in-0:
+          destination: topic_user_needs_clean
+          group: ai_brain_catchPrivateRequest
 
 memo-echo:
   ai:

@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 public class MQServiceImpl implements MQService {
     @Override
     public boolean sendToMQ(ExtractedMessage msg, String key) {
+
+
+
         return false;
     }
 }

@@ -11,8 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.util.ResourceUtils;
 
 
@@ -24,7 +22,6 @@ class AiBrainApplicationTests {
 
     @Test
     void testAiService() throws IOException, InterruptedException {
-        Thread.sleep(10000);
         log.info("================== 开始测试 ====================");
         File file =  ResourceUtils.getFile("classpath:documents/data.txt");
 

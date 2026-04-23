@@ -1,8 +1,6 @@
 package com.memoecho.ai_brain.consumer;
 
-import com.memoecho.ai_brain.service.MQService;
 import com.memoecho.ai_brain.service.UnextractedMsgService;
-import com.memoecho.memo_echo_apis.dto.ExtractedMessage;
 import com.memoecho.memo_echo_apis.dto.ReceivedMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,19 +9,19 @@ import org.springframework.stereotype.Component;
 import java.util.function.Consumer;
 
 /**
- * 🛰️ 消费过滤层信息类
+ * 🛰️ 处理过滤后的用户请求
  * <hr/>
- * 🧩 职责： MQ 1.3
- * 🛡️ 关联：
+ * 🧩 职责： 监听消费队列，处理用户的请求，注意区分私信请求以及群组请求。
+ * 🛡️ 关联： MQ规范 3-2，2-2
  * 🗺️ 架构： (MemoEcho)
  *
- * @author Sisfuzues
- * @date 2026/4/19 22:14
+ * @author Sisfuzes
+ * @date  2026/4/19 22:21
  */
-@Component("CleanMsgConsumer")
-@Slf4j(topic = "筛选后信息消费类")
+@Component("CleanGroupRequestConsumer")
+@Slf4j(topic = "筛选后的群组请求")
 @RequiredArgsConstructor
-public class CleanMsgConsumer implements Consumer<Message<ReceivedMessage>> {
+public class CleanGroupRequestConsumer implements Consumer<Message<ReceivedMessage>> {
     private final UnextractedMsgService unextractedMsgService;
 
     @Override
@@ -32,12 +30,6 @@ public class CleanMsgConsumer implements Consumer<Message<ReceivedMessage>> {
                 receivedMsg.getPayload().toString());
 
         ReceivedMessage payload = receivedMsg.getPayload();
-        Boolean res = unextractedMsgService.savedMsg(payload);
-
-        if(Boolean.FALSE.equals(res)){
-            log.error("消息未能成功存储日程，消息 MessageId:{}"
-                    ,payload.getMessageId());
-        }
-        log.info("成功存储日程。");
+        unextractedMsgService.handleRequest(payload);
     }
 }

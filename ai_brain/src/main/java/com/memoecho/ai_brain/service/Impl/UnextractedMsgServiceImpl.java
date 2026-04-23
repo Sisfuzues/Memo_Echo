@@ -105,4 +105,9 @@ public class UnextractedMsgServiceImpl implements UnextractedMsgService {
 //        log.info("筛选后的日程信息:{}",sout);
         return true;
     }
+
+    @Override
+    public void handleRequest(ReceivedMessage msg) {
+        
+    }
 }

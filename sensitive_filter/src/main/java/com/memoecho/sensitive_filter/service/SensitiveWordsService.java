@@ -16,4 +16,19 @@ public interface SensitiveWordsService {
      * &#064;date  2026/4/18 19:35
      */
     boolean sensitiveWordsKill(ReceivedMessage msg);
+
+    /**
+     * 🐊 处理消费的不可靠消息
+     * <hr/>
+     * 🥹 注意:
+     * <pre>
+     *
+     * </pre>
+     *
+     * @author Sisfuzues
+     * @Date 2026/4/23 23:09
+     */
+    void handleConsumerMsg(String safeTopic,String safeTags,
+                           String unsafeTopic,String unsafeTags,
+                           ReceivedMessage msg);
 }

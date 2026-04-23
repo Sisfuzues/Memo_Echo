@@ -7,21 +7,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
+
 import java.util.function.Consumer;
 
-
-@Slf4j(topic = "过滤群日程信息")
-@Component("botMsgConsumer")
+@Slf4j(topic = "私人信息处理类")
+@Component("privateNeedsConsumer")
 @RequiredArgsConstructor
-public class ReceivedMessageConsumer implements Consumer<Message<ReceivedMessage>> {
+public class RequestPrivateMsgConsumer implements Consumer<Message<ReceivedMessage>> {
     private final SensitiveWordsService sensitiveWordsService;
+    private final MQService mqService;
+
 
     @Override
     public void accept(Message<ReceivedMessage> receivedMessage) {
         log.info("收到消息{}",receivedMessage.toString());
         ReceivedMessage payload = receivedMessage.getPayload();
-        sensitiveWordsService.handleConsumerMsg("sensitive_filter-out-1", "group_msg_filtered",
+        sensitiveWordsService.handleConsumerMsg("sensitive_filter-out-4", "private_msg_filtered",
                 "sensitive_filter-out-2" , "group_msg_unsafe" ,payload);
     }
 }
-

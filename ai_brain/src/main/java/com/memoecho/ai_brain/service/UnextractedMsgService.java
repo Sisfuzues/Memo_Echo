@@ -17,4 +17,6 @@ public interface UnextractedMsgService {
      * @date 2026/4/19 22:12
      */
     Boolean savedMsg(ReceivedMessage msg);
+
+    void handleRequest(ReceivedMessage msg);
 }
