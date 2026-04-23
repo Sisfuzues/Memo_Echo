@@ -1,12 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// 导入你的登录组件
-import Login from '../components/Login.vue'
+import AuthView from '../views/AuthView.vue'
 
 const routes = [
     {
         path: '/',
-        name: 'Login',
-        component: Login
+        name: 'Auth',
+        component: AuthView
     },
     {
         path: '/dashboard',
