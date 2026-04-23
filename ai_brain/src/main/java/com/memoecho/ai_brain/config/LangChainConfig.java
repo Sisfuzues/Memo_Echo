@@ -1,5 +1,7 @@
 package com.memoecho.ai_brain.config;
 
+import com.memoecho.ai_brain.prompt.Entity.MessageSegment;
+import com.memoecho.ai_brain.prompt.ResponseGenerator;
 import com.memoecho.ai_brain.prompt.ScheduleExtractor;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatModel;
@@ -18,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Configuration
@@ -99,6 +102,14 @@ public class LangChainConfig {
     @Bean
     public ScheduleExtractor scheduleExtractor(ChatModel chatModel){
         return AiServices.builder(ScheduleExtractor.class)
+                .chatModel(chatModel)
+                .build();
+    }
+
+    // 注册ai服务，用来总结出回复
+    @Bean
+    public ResponseGenerator responseGenerator(ChatModel chatModel){
+        return AiServices.builder(ResponseGenerator.class)
                 .chatModel(chatModel)
                 .build();
     }

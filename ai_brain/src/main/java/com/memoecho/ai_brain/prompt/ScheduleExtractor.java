@@ -1,16 +1,9 @@
 package com.memoecho.ai_brain.prompt;
 
-import com.alibaba.fastjson2.annotation.JSONField;
-import com.memoecho.memo_echo_apis.dto.ExtractedMessage;
-import dev.langchain4j.agent.tool.P;
+import com.memoecho.ai_brain.prompt.Entity.Memo;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
-import jdk.jfr.Description;
-import org.springframework.cglib.core.Local;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
 
 public interface ScheduleExtractor {
 
@@ -36,7 +29,7 @@ public interface ScheduleExtractor {
             "不能捏造数据。"
     })
     @UserMessage("请从下面输入的文本中提取结构化的日程信息:\n\n {{userInput}}")
-    Memo  extract(
+    Memo extract(
         @V("currentTime") String currentTime,
         @V("userInput") String userInput
     );

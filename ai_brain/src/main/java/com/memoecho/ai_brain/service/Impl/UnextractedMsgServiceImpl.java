@@ -2,7 +2,7 @@ package com.memoecho.ai_brain.service.Impl;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
-import com.memoecho.ai_brain.prompt.Memo;
+import com.memoecho.ai_brain.prompt.Entity.Memo;
 import com.memoecho.ai_brain.prompt.ScheduleExtractor;
 import com.memoecho.ai_brain.service.UnextractedMsgService;
 import com.memoecho.memo_echo_apis.client.PersistenceAiDbClient;
@@ -108,6 +108,6 @@ public class UnextractedMsgServiceImpl implements UnextractedMsgService {
 
     @Override
     public void handleRequest(ReceivedMessage msg) {
-        
+
     }
 }

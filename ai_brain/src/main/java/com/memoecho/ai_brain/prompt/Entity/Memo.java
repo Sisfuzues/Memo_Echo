@@ -1,4 +1,4 @@
-package com.memoecho.ai_brain.prompt;
+package com.memoecho.ai_brain.prompt.Entity;
 
 import jdk.jfr.Description;
 import lombok.Data;
