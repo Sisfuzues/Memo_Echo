@@ -21,6 +21,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest){
+        
         log.info("请求参数: userId={}", loginRequest.getUserId());
         LoginResponse response = userMessageService.UserLogin(loginRequest);
         return ResponseEntity.ok(response);

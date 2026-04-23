@@ -56,25 +56,25 @@ security:
     rate-limit-interval: 60
     max-daily-count: 5
 
-#    # 🚨 修正：function 必须和 stream 平级！
-#    function:
-#      definition: UnsafeMsgConsumer                 # 只有定义的组件才能分到MQ的流量
-#
-#    # 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
-#    # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
-#    stream:
-#      rocketmq:
-#        binder:
-#          name-server: 127.0.0.1:9876
-#          vip-channel-enabled: false
-#        bindings:
-#          UnsafeMsgConsumer-in-0:
-#            consumer:
-#              tags: group_msg_unsafe
-#      bindings:
-#        UnsafeMsgConsumer-in-0:
-#          destination: topic_security_alerts
-#          group: persistence-group-unsafe
+    # 🚨 修正：function 必须和 stream 平级！
+    function:
+      definition: UnsafeMsgConsumer                 # 只有定义的组件才能分到MQ的流量
+
+    # 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
+    # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
+    stream:
+      rocketmq:
+        binder:
+          name-server: 127.0.0.1:9876
+          vip-channel-enabled: false
+        bindings:
+          UnsafeMsgConsumer-in-0:
+            consumer:
+              tags: group_msg_unsafe
+      bindings:
+        UnsafeMsgConsumer-in-0:
+          destination: topic_security_alerts
+          group: persistence-group-unsafe
 
 mybatis-plus:
   configuration:

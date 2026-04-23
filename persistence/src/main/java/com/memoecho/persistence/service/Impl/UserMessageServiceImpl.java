@@ -37,7 +37,7 @@ public class UserMessageServiceImpl implements UserMessageService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public RegisterResponse UserRegister(RegisterRequest registerRequest) {
+    public RegisterResponse UserRegister(RegisterRequest registerRequest) throws AuthenticationException{
 
         EmailResponse emailResponse = codeMessageService.verifyCode(registerRequest.getEmail(), registerRequest.getCode());
         if (emailResponse.getCode().equals("500")){
@@ -59,6 +59,8 @@ public class UserMessageServiceImpl implements UserMessageService {
         user.setKill(false);
 
         userMapper.insert(user);
+
+        codeMessageService.deleteCode(registerRequest.getEmail());
         return new RegisterResponse("注册成功");
 
     }

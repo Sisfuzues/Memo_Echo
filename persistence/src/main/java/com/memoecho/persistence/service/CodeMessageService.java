@@ -7,6 +7,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public interface CodeMessageService {
 
+    public boolean checkRateLimit(String email);
+
+    public boolean deleteCode(String email);
+
+    public boolean checkDailyLimit(String email);
+
 
     //将验证码存储到缓存中
     public void saveCode(String email, String code);

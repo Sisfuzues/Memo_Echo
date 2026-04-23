@@ -61,16 +61,21 @@ public class CodeMessageServiceImpl implements CodeMessageService {
                 log.warn("验证码错误: email={}", email);
                 return new EmailResponse("500", "验证码错误");
             }
-            
-            redisTemplate.delete(key);
-            log.info("验证码验证成功并已删除: email={}", email);
+
             return new EmailResponse("200", "验证成功");
         } catch (Exception e) {
             log.error("验证码解密失败: email={}", email, e);
             return new EmailResponse("500", "验证失败");
         }
     }
-    
+
+    @Override
+    public boolean deleteCode(String email){
+        String key = VERIFY_CODE_PREFIX + email;
+        return Boolean.TRUE.equals(redisTemplate.delete(key));
+    }
+
+    @Override
     public boolean checkRateLimit(String email) {
         String rateLimitKey = RATE_LIMIT_PREFIX + email;
         Boolean exists = redisTemplate.hasKey(rateLimitKey);
@@ -81,6 +86,8 @@ public class CodeMessageServiceImpl implements CodeMessageService {
         redisTemplate.opsForValue().set(rateLimitKey, "1", codeConfig.getRateLimitInterval(), TimeUnit.SECONDS);
         return true;
     }
+
+    @Override
     
     public boolean checkDailyLimit(String email) {
         String today = java.time.LocalDate.now().toString();
