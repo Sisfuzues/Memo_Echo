@@ -6,6 +6,7 @@ import com.memoecho.persistence.dto.EmailResponse;
 import com.memoecho.persistence.service.CodeMessageService;
 import com.memoecho.persistence.service.EmailMessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "邮件发送服务")
 public class EmailMessageServiceImpl implements EmailMessageService {
 
     private final JavaMailSender mailSender;
@@ -25,6 +27,14 @@ public class EmailMessageServiceImpl implements EmailMessageService {
 
     @Override
     public EmailResponse sendVerificationCode(String email) {
+        if (!((CodeMessageServiceImpl) codeMessageService).checkRateLimit(email)) {
+            return new EmailResponse("500", "请勿频繁请求，请60秒后再试");
+        }
+        
+        if (!((CodeMessageServiceImpl) codeMessageService).checkDailyLimit(email)) {
+            return new EmailResponse("500", "今日发送次数已达上限（5次）");
+        }
+        
         String code = codeMessageService.generateVerificationCode();
 
         codeMessageService.saveCode(email, code);
@@ -39,14 +49,13 @@ public class EmailMessageServiceImpl implements EmailMessageService {
             helper.setText(content, true);
             mailSender.send(message);
 
+            log.info("验证码发送成功: email={}", email);
             return new EmailResponse("200", "发送成功");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("验证码发送失败: email={}", email, e);
             return new EmailResponse("500", "发送失败");
         }
-
-
     }
 
 
