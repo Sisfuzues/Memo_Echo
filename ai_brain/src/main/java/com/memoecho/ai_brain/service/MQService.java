@@ -3,6 +3,8 @@ package com.memoecho.ai_brain.service;
 import com.memoecho.memo_echo_apis.dto.ExtractedMessage;
 import com.memoecho.memo_echo_apis.dto.ReplyMessage;
 
+import java.util.List;
+
 public interface MQService {
     /**
      * 发送MQ信息
@@ -18,4 +20,5 @@ public interface MQService {
      * @date  2026/4/19 22:15
      */
     boolean sendToMQ(ExtractedMessage msg,String key);
+
 }

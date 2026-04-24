@@ -1,6 +1,7 @@
 package com.memoecho.bot_gateway.service;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.memoecho.memo_echo_apis.dto.ResponseMessage;
 
 public interface BotMessageService {
     /**
@@ -44,4 +45,5 @@ public interface BotMessageService {
      */
     void processBotEvent(JSONObject jsonObject,String type);
 
+    void sendGroupResponse(ResponseMessage responseMessage);
 }

@@ -89,7 +89,7 @@ public interface NapcatClient {
      * @author Sisfuzues
      * @Date 2026/4/21 11:07
      */
-    JSONObject getGroupList();
+//    JSONObject getGroupList();
 
     // ================= 系统信息类 ===================
     @GetMapping("/get_status")

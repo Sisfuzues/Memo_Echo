@@ -3,6 +3,7 @@ package com.memoecho.bot_gateway.controller;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.memoecho.bot_gateway.service.Impl.QQBotMessageServiceImpl;
+import com.memoecho.memo_echo_apis.dto.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,5 +56,10 @@ public class QQBotController {
 
         botMessageService.processBotEvent(jsonObject,type);
         return "{}";
+    }
+
+    @PostMapping("/send/response")
+    public void sendResponse(@RequestBody ResponseMessage responseMessage){
+        botMessageService.sendGroupResponse(responseMessage);
     }
 }

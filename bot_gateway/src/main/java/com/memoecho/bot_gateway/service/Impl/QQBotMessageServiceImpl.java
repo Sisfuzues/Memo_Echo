@@ -8,6 +8,7 @@ import com.memoecho.bot_gateway.service.MQService;
 import com.memoecho.memo_echo_apis.client.PersistenceStatusClient;
 import com.memoecho.memo_echo_apis.dto.BotStatus;
 import com.memoecho.memo_echo_apis.dto.ReceivedMessage;
+import com.memoecho.memo_echo_apis.dto.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -148,6 +149,17 @@ public class QQBotMessageServiceImpl implements BotMessageService {
                 log.info("收到其他类型消息：{}",type);
                 break;
         }
+    }
+
+    @Override
+    public void sendGroupResponse(ResponseMessage responseMessage) {
+        Map<String,Object> params = new HashMap<>();
+        Long groupId = responseMessage.getGroupId();
+        params.put("group_id",groupId);
+        params.put("message",responseMessage.getResponse());
+
+        napcatClient.sendGroupMsg(params);
+        log.info("发送消息，消息内容:{}",params.toString());
     }
 
     @Override

@@ -1,6 +1,5 @@
-package com.memoecho.ai_brain.prompt.Entity;
+package com.memoecho.memo_echo_apis.dto;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.Map;

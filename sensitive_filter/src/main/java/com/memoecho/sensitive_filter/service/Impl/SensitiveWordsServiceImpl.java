@@ -136,6 +136,7 @@ public class SensitiveWordsServiceImpl implements SensitiveWordsService {
     @Override
     public void handleConsumerMsg(String safeTopic, String safeTags, String unsafeTopic, String unsafeTags,
                                   ReceivedMessage payload) {
+        log.info("开始处理消费的信息。");
         // 是否被斩杀
         String topic,tag,key;
         key = payload.getMessageId().toString();

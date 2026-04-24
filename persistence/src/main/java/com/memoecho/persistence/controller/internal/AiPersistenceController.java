@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * 🐈 储存ai处理后的信息
  * <hr/>
@@ -48,4 +50,8 @@ public class AiPersistenceController {
         return memoService.save(memo);
     }
 
+    @PostMapping("/persistence/memo/get")
+    public List<ExtractedMessage> getFromDB(@RequestBody List<Long> msgIds){
+        return memoService.getByIds(msgIds);
+    }
 }

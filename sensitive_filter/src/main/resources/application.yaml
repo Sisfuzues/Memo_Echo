@@ -9,6 +9,9 @@ spring:
       discovery: # 必须是 discovery
         server-addr: 127.0.0.1:8848 # Nacos 的本地地址
 
+
+    function:
+      definition: botMsgConsumer;groupNeedsConsumer;privateNeedsConsumer               # 只有定义的组件才能分到MQ的流量
     # 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
     # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
     stream:
@@ -21,8 +24,6 @@ spring:
 #        bot_gateway-out-3_1:
 #          destination: topic_user_needs
 #          content-type: application/json
-      function:
-        definition: botMsgConsumer;groupNeedsConsumer;privateNeedsConsumer               # 只有定义的组件才能分到MQ的流量
       rocketmq:
         binder:
           name-server: 127.0.0.1:9876
@@ -43,10 +44,10 @@ spring:
           group: sensitive-filter-group-read
         groupNeedsConsumer-in-0:
           destination: topic_group_needs_raw
-          group: sensitive-filter-group-read
+          group: sensitive-filter-group-needs
         privateNeedsConsumer-in-0:
           destination: topic_private_needs_raw
-          group: sensitive-filter-private-read
+          group: sensitive-filter-private-needs
         sensitive_filter-out-1:
           destination: topic_msg_clean
           content-type: application/json

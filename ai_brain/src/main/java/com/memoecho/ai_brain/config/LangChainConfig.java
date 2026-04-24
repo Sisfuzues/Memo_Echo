@@ -1,6 +1,5 @@
 package com.memoecho.ai_brain.config;
 
-import com.memoecho.ai_brain.prompt.Entity.MessageSegment;
 import com.memoecho.ai_brain.prompt.ResponseGenerator;
 import com.memoecho.ai_brain.prompt.ScheduleExtractor;
 import dev.langchain4j.data.segment.TextSegment;
@@ -20,8 +19,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @Configuration
 @Slf4j(topic = "LangChain配置")

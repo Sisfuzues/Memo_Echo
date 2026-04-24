@@ -35,4 +35,12 @@ public class ExtractedMessage implements Serializable {
         private String introduce;      // 日程详情
         private String participants;   // 参与同学
     }
+
+    @Override
+    public String toString(){
+        return String.format("简介:%s,具体内容:%s,时间%s至%s,地点:%s,参与者:%s",
+                memo.getContent(),memo.introduce,memo.getStartTime(),
+                memo.getEndTime(),memo.getLocation(),memo.getParticipants()
+        );
+    }
 }
