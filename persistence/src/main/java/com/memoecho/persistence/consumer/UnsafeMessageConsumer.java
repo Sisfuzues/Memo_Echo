@@ -1,8 +1,5 @@
 package com.memoecho.persistence.consumer;
 
-import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.JSON;
-import com.memoecho.memo_echo_apis.dto.ReceivedMessage;
 import com.memoecho.persistence.pojo.UnsafeMessage;
 import com.memoecho.persistence.service.UnsafeMessageService;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +20,7 @@ public class UnsafeMessageConsumer implements Consumer<Message<UnsafeMessage>> {
         log.info("持久层收到消息，{}",
                 receivedMessage.getPayload().toString());
 
-        UnsafeMessage payLoad = receivedMessage.getPayload();
-        UnsafeMessage unsafeMessage =
-                ((JSONObject) JSON.toJSON(payLoad)).
-                        toJavaObject(UnsafeMessage.class);
+        UnsafeMessage unsafeMessage = receivedMessage.getPayload();
 
         boolean res = unsafeMessageService.
                 updateMsgAndScore(unsafeMessage);

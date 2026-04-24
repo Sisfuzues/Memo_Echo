@@ -1,5 +1,6 @@
 package com.memoecho.persistence.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -14,13 +15,14 @@ import lombok.Data;
  * &#064;date  2026/4/19 22:33
  */
 @Data
-@TableName
+@TableName("user")
 public class User {
+    @TableId
     private Long userId;
-    private Long qqId;    // qq的id
+    private Long qqId;
     private String userName;
     private String email;
-    private String phone; // 暂时用不到
+    private String phone;
     private String password;
     private boolean isKill; // 是否被拉黑
 
