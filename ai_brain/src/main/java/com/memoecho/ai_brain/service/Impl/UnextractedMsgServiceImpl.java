@@ -136,7 +136,7 @@ public class UnextractedMsgServiceImpl implements UnextractedMsgService {
         EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
                 .queryEmbedding(queryEmbedding)
                 .maxResults(3)
-                .minScore(0.75)
+                .minScore(0.5)
                 // 筛选对应的群号
                 .filter(MetadataFilterBuilder.metadataKey("group_id").isEqualTo(groupId))
                 .build();

@@ -2,6 +2,7 @@ package com.memoecho.ai_brain.config;
 
 import com.memoecho.ai_brain.prompt.ResponseGenerator;
 import com.memoecho.ai_brain.prompt.ScheduleExtractor;
+import com.memoecho.ai_brain.tool.TimeTools;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -108,6 +109,7 @@ public class LangChainConfig {
     public ResponseGenerator responseGenerator(ChatModel chatModel){
         return AiServices.builder(ResponseGenerator.class)
                 .chatModel(chatModel)
+                .tools(new TimeTools())
                 .build();
     }
 }

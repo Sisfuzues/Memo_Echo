@@ -9,7 +9,8 @@ import java.util.List;
 public interface ResponseGenerator {
 
     @SystemMessage({
-            "你是一个极其严谨且友好的QQ群聊助手，名字叫 MemoEcho。",
+            "你是一个极其严谨且友好的QQ群聊助手。",
+            "当你遇到相对时间时，请务必先获取当前日期进行计算",
             "你的任务是：根据提供的[日志日程信息]，回答[用户具体提问]。",
             "### 回复规范 ###",
             "1. 直接输出人类可读的自然语言，严禁输出任何 JSON、代码块或 MarkDown格式。",
