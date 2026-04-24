@@ -1,0 +1,43 @@
+:root {
+  --auth-bg-top: #fff4db;
+  --auth-bg-bottom: #f4dcc2;
+  --auth-surface: rgba(255, 250, 243, 0.84);
+  --auth-accent: #ff9f1c;
+  --auth-accent-strong: #d66f2a;
+  --auth-accent-deep: #8d4f1d;
+  --auth-text-primary: #2f2217;
+  --auth-text-secondary: #6f5b49;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--auth-text-primary);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 32%),
+    radial-gradient(circle at 80% 20%, rgba(255, 201, 133, 0.34), transparent 20%),
+    linear-gradient(145deg, var(--auth-bg-top) 0%, var(--auth-bg-bottom) 100%);
+  line-height: 1.6;
+  font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
