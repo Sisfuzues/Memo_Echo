@@ -22,7 +22,7 @@ public class QQBotStatusTask implements BotStatusTask {
     @Override
     @Scheduled(fixedRate = 15000) // 十五秒监测一次
     public void checkHealth() {
-        log.info("脉搏心跳。");
+//        log.info("脉搏心跳。");
 
         int res = 0;
         try{

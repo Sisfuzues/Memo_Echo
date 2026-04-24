@@ -56,11 +56,14 @@ public class UnextractedMsgServiceImpl implements UnextractedMsgService {
         Instant instant = Instant.ofEpochSecond(sendTime);
         String  now = LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toString();
 
+        log.info("发送给ai进行日程提取。");
         // 根据发送时间估算结果
         Memo res = scheduleExtractor.extract(now, text);
-        if(res==null){
+        if(res.getContent()==null){
+            log.info("未提取到日程，直接放行。");
             return true;
         }
+        log.info("提取到日程。res:{}",res.toString());
 
         Long groupId = msg.getGroupId();
         Long senderId = msg.getSender().getUserId();
@@ -92,9 +95,9 @@ public class UnextractedMsgServiceImpl implements UnextractedMsgService {
         try{
             isSaved = aiPersistenceClient.saveMemoToDb(ans);
         }catch (Exception e){
-            log.error("远程调用微服务异常，微服务名字：{},异常信息：{}"
-                        ,"AiPersistenceClient",e.getCause().toString());
-            log.error("具体信息：",e);
+            log.error("远程调用微服务异常，微服务名字：{},"
+                        ,"AiPersistenceClient");
+            log.error("具体异常信息：",e);
         }
 
         if(Boolean.FALSE.equals(isSaved)){
@@ -180,7 +183,8 @@ public class UnextractedMsgServiceImpl implements UnextractedMsgService {
         }else{
             List<MessageSegment> cur = new ArrayList<>();
             MessageSegment atMsg = ResponseMessage.at(senderId);
-            MessageSegment textMsg = ResponseMessage.text("\n抱歉，没有为您查到相关的日程安排哦。");
+            MessageSegment textMsg = ResponseMessage
+                    .text("\n抱歉，没有为您查到相关的日程安排哦。");
             cur.add(atMsg);
             cur.add(textMsg);
 
@@ -195,10 +199,15 @@ public class UnextractedMsgServiceImpl implements UnextractedMsgService {
             return ;
         }
 
-        List<MessageSegment> messageSegments = responseGenerator.generateSegmentReply(rawMessage, catchMsg.toString());
+        List<MessageSegment> messageSegments = new ArrayList<>();
+        String resStrs = responseGenerator
+                .generateSegmentReply(rawMessage, catchMsg.toString());
         // 需要 at 提问者
         MessageSegment segment = ResponseMessage.at(senderId);
-        messageSegments.add(0,segment);
+        MessageSegment ansSegment = ResponseMessage.text(resStrs);
+        messageSegments.add(segment);
+        messageSegments.add(ansSegment);
+        log.info("ai的输出是:{}",resStrs);
 
         ResponseMessage ans = ResponseMessage.builder()
                 .groupId(groupId)

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@FeignClient(name = "BotGateway")
+@FeignClient(name = "bot-gateway")
 public interface BotControllerClient {
     @PostMapping("/internal/send/response")
     void sendResponse(@RequestBody ResponseMessage responseMessage);

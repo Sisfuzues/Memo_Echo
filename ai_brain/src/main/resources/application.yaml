@@ -24,6 +24,9 @@ spring:
           CleanMsgConsumer-in-0:
             consumer:
               tags: group_msg_filtered
+          CleanGroupRequestConsumer-in-0:
+            consumer:
+              tags: group_msg_filtered
       bindings:
         CleanMsgConsumer-in-0:
           destination: topic_msg_clean

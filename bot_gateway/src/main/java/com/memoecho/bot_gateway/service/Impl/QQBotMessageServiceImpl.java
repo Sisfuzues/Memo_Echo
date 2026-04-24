@@ -122,9 +122,10 @@ public class QQBotMessageServiceImpl implements BotMessageService {
         String tag = "group_msg_received";
         String key = receivedMessage.getMessageId().toString();  // 用messageID来存储
         if(rawMessage.contains(queryAt)){
+            log.info("存在@信息。");
             String messageType = receivedMessage.getMessageType();
             topic = Objects.equals(messageType, "group") ?
-                    "bot_gateway-output-2":"bot_gateway-output-3";
+                    "bot_gateway-out-2":"bot_gateway-out-3";
             tag = Objects.equals(messageType,"group")?
                     "group_msg_received":"private_msg_received";
         }

@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: bot_gateway
+    name: bot-gateway
 
   cloud:
     nacos:
