@@ -8,12 +8,13 @@
 
     <form class="auth-form" @submit.prevent="handleLogin">
       <label class="field">
-        <span>账号</span>
+        <span>用户ID</span>
         <input
-          v-model.trim="loginForm.username"
+          v-model.trim="loginForm.userId"
           type="text"
           autocomplete="username"
-          placeholder="请输入账号或邮箱"
+          inputmode="numeric"
+          placeholder="请输入数字用户ID"
         />
       </label>
 
@@ -42,7 +43,7 @@
           <input v-model="rememberMe" type="checkbox" />
           <span>记住本次登录</span>
         </label>
-        <span class="meta-tip">后续可接入真实鉴权接口</span>
+        <span class="meta-tip">对接 persistence /user/login</span>
       </div>
 
       <p v-if="errorMsg" class="feedback feedback-error">{{ errorMsg }}</p>
@@ -63,12 +64,14 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { apiFetch } from '@/utils/api';
+import { setAuthToken, setCurrentUserId } from '@/utils/auth';
 
 defineEmits(['toRegister']);
 const router = useRouter();
 
 const loginForm = reactive({
-  username: '',
+  userId: '',
   password: ''
 });
 const errorMsg = ref('');
@@ -78,9 +81,17 @@ const rememberMe = ref(true);
 const isSubmitting = ref(false);
 
 const handleLogin = async () => {
-  if (!loginForm.username || !loginForm.password) {
+  const parsedUserId = Number(loginForm.userId);
+
+  if (!loginForm.userId || !loginForm.password) {
     successMsg.value = '';
-    errorMsg.value = '请输入完整的账号和密码。';
+    errorMsg.value = '请输入完整的用户ID和密码。';
+    return;
+  }
+
+  if (!Number.isInteger(parsedUserId) || parsedUserId <= 0) {
+    successMsg.value = '';
+    errorMsg.value = '用户ID必须是正整数。';
     return;
   }
 
@@ -88,11 +99,43 @@ const handleLogin = async () => {
   successMsg.value = '';
   isSubmitting.value = true;
 
-  await new Promise((resolve) => setTimeout(resolve, 700));
+  try {
+    const response = await apiFetch('/api/persistence/user/login', {
+      method: 'POST',
+      auth: false,
+      json: {
+        userId: parsedUserId,
+        password: loginForm.password
+      }
+    });
 
-  isSubmitting.value = false;
-  successMsg.value = rememberMe.value ? '登录成功，已为你保留登录状态偏好。' : '登录成功，正在跳转。';
-  router.push('/dashboard');
+    const result = await response.json().catch(() => null);
+    const data = result?.data ?? null;
+
+    if (!response.ok) {
+      errorMsg.value = result?.message || '登录失败，请检查用户ID和密码。';
+      return;
+    }
+
+    if (result?.code !== 200) {
+      errorMsg.value = result?.message || data?.message || '登录失败，请检查用户ID和密码。';
+      return;
+    }
+
+    if (!data?.token) {
+      errorMsg.value = '登录响应缺少 token，无法建立会话。';
+      return;
+    }
+
+    setAuthToken(data.token, rememberMe.value);
+    setCurrentUserId(String(data.userId ?? parsedUserId), rememberMe.value);
+    successMsg.value = rememberMe.value ? '登录成功，登录状态已保留。' : '登录成功，当前会话有效。';
+    await router.push('/dashboard');
+  } catch (error) {
+    errorMsg.value = '无法连接登录服务，请确认 persistence 已启动。';
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 </script>
 

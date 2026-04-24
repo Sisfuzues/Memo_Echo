@@ -3,20 +3,21 @@
     <div class="card-header">
       <p class="eyebrow">创建账号</p>
       <h2>注册新的管理账号</h2>
-      <p class="subtitle">先完成基础信息校验，后续可以继续接入真实注册接口。</p>
+      <p class="subtitle">按 persistence 的注册协议创建账号，需先获取邮箱验证码。</p>
     </div>
 
     <form class="auth-form" @submit.prevent="doRegister">
       <label class="field">
-        <span>用户名</span>
+        <span>用户ID</span>
         <input
-          v-model.trim="regForm.username"
-          :class="{ 'error-border': errors.username }"
-          @blur="validateField('username')"
+          v-model.trim="regForm.userId"
+          :class="{ 'error-border': errors.userId }"
+          @blur="validateField('userId')"
           type="text"
-          placeholder="设置用户名"
+          inputmode="numeric"
+          placeholder="设置数字用户ID"
         />
-        <p v-if="errors.username" class="error-msg">{{ errorTips.username }}</p>
+        <p v-if="errors.userId" class="error-msg">{{ errorTips.userId }}</p>
       </label>
 
       <label class="field">
@@ -29,6 +30,29 @@
           placeholder="name@example.com"
         />
         <p v-if="errors.email" class="error-msg">{{ errorTips.email }}</p>
+      </label>
+
+      <label class="field">
+        <span>邮箱验证码</span>
+        <div class="code-field">
+          <input
+            v-model.trim="regForm.code"
+            :class="{ 'error-border': errors.code }"
+            @blur="validateField('code')"
+            type="text"
+            placeholder="请输入6位验证码"
+          />
+          <button
+            class="secondary-btn"
+            type="button"
+            :disabled="isSendingCode || countdown > 0"
+            @click="sendCode"
+          >
+            {{ isSendingCode ? '发送中...' : countdown > 0 ? `${countdown}s后重发` : '发送验证码' }}
+          </button>
+        </div>
+        <p v-if="errors.code" class="error-msg">{{ errorTips.code }}</p>
+        <p v-else class="input-hint">验证码会发送到填写的邮箱，后端校验以 persistence 为准。</p>
       </label>
 
       <label class="field">
@@ -50,7 +74,7 @@
           </button>
         </div>
         <p v-if="errors.password" class="error-msg">{{ errorTips.password }}</p>
-        <p v-else class="input-hint">密码需要同时包含字母和数字，长度至少 8 位。</p>
+        <p v-else class="input-hint">密码长度需在 6 到 20 位之间，规则以 persistence 后端校验为准。</p>
       </label>
 
       <label class="field">
@@ -65,9 +89,17 @@
         <p v-if="errors.confirm" class="error-msg">{{ errorTips.confirm }}</p>
       </label>
 
-      <p v-if="submitMessage" class="feedback">{{ submitMessage }}</p>
+      <p
+        v-if="submitMessage"
+        class="feedback"
+        :class="submitIsError ? 'feedback-error' : 'feedback-success'"
+      >
+        {{ submitMessage }}
+      </p>
 
-      <button class="submit-btn" type="submit">立即注册</button>
+      <button class="submit-btn" type="submit" :disabled="isSubmitting">
+        {{ isSubmitting ? '注册中...' : '立即注册' }}
+      </button>
     </form>
 
     <p class="switch-text">
@@ -78,43 +110,54 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { onBeforeUnmount, reactive, ref } from 'vue';
+import { apiFetch } from '@/utils/api';
 
 defineEmits(['toLogin']);
 
 const regForm = reactive({
-  username: '',
+  userId: '',
   email: '',
+  code: '',
   password: '',
   confirm: ''
 });
 const showPassword = ref(false);
 const submitMessage = ref('');
+const submitIsError = ref(false);
+const isSubmitting = ref(false);
+const isSendingCode = ref(false);
+const countdown = ref(0);
+let countdownTimer = null;
 
 const errors = reactive({
-  username: false,
+  userId: false,
   email: false,
+  code: false,
   password: false,
   confirm: false
 });
 
 const errorTips = reactive({
-  username: '',
+  userId: '',
   email: '',
+  code: '',
   password: '',
   confirm: ''
 });
 
 const validateField = (field) => {
-  const val = regForm[field].trim();
+  const rawVal = String(regForm[field] ?? '');
+  const normalizedVal = ['userId', 'email', 'code'].includes(field) ? rawVal.trim() : rawVal;
   errors[field] = false;
   errorTips[field] = '';
 
-  if (!val) {
+  if (!normalizedVal) {
     errors[field] = true;
     const emptyMsgs = {
-      username: '用户名不能为空',
+      userId: '请输入用户ID',
       email: '请输入邮箱地址',
+      code: '请输入邮箱验证码',
       password: '请设置你的登录密码',
       confirm: '请再次输入密码以确认'
     };
@@ -123,21 +166,35 @@ const validateField = (field) => {
   }
 
   const EMAIL_REG = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const PWD_REG = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  const PWD_REG = /^.{6,20}$/;
+  const CODE_REG = /^\d{6}$/;
+  const userIdNum = Number(regForm.userId);
 
-  if (field === 'email' && !EMAIL_REG.test(val)) {
+  if (field === 'userId' && (!Number.isInteger(userIdNum) || userIdNum <= 0)) {
+    errors.userId = true;
+    errorTips.userId = '用户ID必须是正整数';
+    return false;
+  }
+
+  if (field === 'email' && !EMAIL_REG.test(normalizedVal)) {
     errors.email = true;
     errorTips.email = '邮箱格式看起来不太对';
     return false;
   }
 
-  if (field === 'password' && !PWD_REG.test(val)) {
-    errors.password = true;
-    errorTips.password = '密码需要包含字母和数字，且至少为8位';
+  if (field === 'code' && !CODE_REG.test(normalizedVal)) {
+    errors.code = true;
+    errorTips.code = '验证码应为6位数字';
     return false;
   }
 
-  if (field === 'confirm' && val !== regForm.password) {
+  if (field === 'password' && !PWD_REG.test(normalizedVal)) {
+    errors.password = true;
+    errorTips.password = '密码长度需要在6到20位之间';
+    return false;
+  }
+
+  if (field === 'confirm' && rawVal !== regForm.password) {
     errors.confirm = true;
     errorTips.confirm = '两次输入的密码不匹配';
     return false;
@@ -146,15 +203,122 @@ const validateField = (field) => {
   return true;
 };
 
-const doRegister = () => {
-  submitMessage.value = '';
-  const fields = ['username', 'email', 'password', 'confirm'];
-  const allValid = fields.every((f) => validateField(f));
+const startCountdown = () => {
+  countdown.value = 60;
+  countdownTimer = window.setInterval(() => {
+    countdown.value -= 1;
+    if (countdown.value <= 0) {
+      window.clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+  }, 1000);
+};
 
-  if (allValid) {
-    submitMessage.value = '注册信息已通过前端校验，可以接入后端注册接口。';
+const sendCode = async () => {
+  submitMessage.value = '';
+  submitIsError.value = false;
+
+  if (!validateField('email')) {
+    return;
+  }
+
+  isSendingCode.value = true;
+
+  try {
+    const response = await apiFetch('/api/persistence/email/send-email', {
+      method: 'POST',
+      auth: false,
+      json: {
+        email: regForm.email.trim()
+      }
+    });
+
+    const result = await response.json().catch(() => null);
+    const data = result?.data ?? null;
+
+    if (!response.ok) {
+      submitIsError.value = true;
+      submitMessage.value = result?.message || '验证码发送失败，请稍后重试。';
+      return;
+    }
+
+    if (result?.code !== 200 || data?.code !== '200') {
+      submitIsError.value = true;
+      submitMessage.value = result?.message || data?.message || '验证码发送失败，请检查邮箱。';
+      return;
+    }
+
+    submitMessage.value = data.message || '验证码已发送，请检查邮箱。';
+    startCountdown();
+  } catch (error) {
+    submitIsError.value = true;
+    submitMessage.value = '无法连接验证码服务，请确认 persistence 已启动。';
+  } finally {
+    isSendingCode.value = false;
   }
 };
+
+const doRegister = async () => {
+  submitMessage.value = '';
+  submitIsError.value = false;
+  const fields = ['userId', 'email', 'code', 'password', 'confirm'];
+  const allValid = fields.every((f) => validateField(f));
+
+  if (!allValid) {
+    return;
+  }
+
+  isSubmitting.value = true;
+
+  try {
+    const response = await apiFetch('/api/persistence/user/register', {
+      method: 'POST',
+      auth: false,
+      json: {
+        userId: Number(regForm.userId),
+        email: regForm.email.trim(),
+        code: regForm.code.trim(),
+        password: regForm.password
+      }
+    });
+
+    const result = await response.json().catch(() => null);
+    const data = result?.data ?? null;
+
+    if (!response.ok) {
+      submitIsError.value = true;
+      submitMessage.value = result?.message || '注册失败，请检查输入信息。';
+      return;
+    }
+
+    if (result?.code !== 200) {
+      submitIsError.value = true;
+      submitMessage.value = result?.message || data?.message || '注册失败，请检查输入信息。';
+      return;
+    }
+
+    const message = data?.message || '';
+    submitMessage.value = message || '注册请求已提交。';
+    submitIsError.value = message !== '注册成功';
+
+    if (message === '注册成功') {
+      regForm.code = '';
+      regForm.password = '';
+      regForm.confirm = '';
+    }
+  } catch (error) {
+    submitIsError.value = true;
+    submitMessage.value = '无法连接注册服务，请确认 persistence 已启动。';
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+onBeforeUnmount(() => {
+  if (countdownTimer) {
+    window.clearInterval(countdownTimer);
+  }
+});
 </script>
 
 <style scoped>
@@ -229,6 +393,13 @@ input:focus {
   width: 100%;
 }
 
+.code-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
 .password-field input {
   padding-right: 88px;
 }
@@ -249,6 +420,23 @@ input:focus {
   cursor: pointer;
 }
 
+.secondary-btn {
+  border: 0;
+  border-radius: 16px;
+  height: 48px;
+  padding: 0 16px;
+  background: rgba(214, 111, 42, 0.12);
+  color: var(--auth-accent-deep);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.secondary-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
 .error-border {
   border-color: #d45536;
   background: rgba(246, 115, 79, 0.08);
@@ -258,6 +446,34 @@ input:focus {
   margin-top: 6px;
   color: #a63c28;
   font-size: 0.86rem;
+}
+
+.input-hint {
+  margin-top: 6px;
+  color: var(--auth-text-secondary);
+  font-size: 0.86rem;
+}
+
+.feedback {
+  padding: 12px 14px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  font-size: 0.92rem;
+}
+
+.feedback-error {
+  color: #a63c28;
+  background: rgba(236, 97, 63, 0.14);
+}
+
+.feedback-success {
+  color: #22623d;
+  background: rgba(96, 182, 124, 0.14);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .input-hint {
