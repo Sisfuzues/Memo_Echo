@@ -38,9 +38,11 @@
     <modules>
         <module>bot_gateway</module>
         <module>sensitive_filter</module>
+        <module>memo_echo_common</module>
         <module>memo_echo_apis</module>
         <module>ai_brain</module>
         <module>persistence</module>
+        <module>api_gateway</module>
     </modules>
 
     <dependencyManagement>

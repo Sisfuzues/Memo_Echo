@@ -18,7 +18,7 @@
       {
         "enable": true,
         "name": "bot网站",
-        "url": "http://host.docker.internal:8080/api/bot/webhook",
+        "url": "http://host.docker.internal:8090/api/bot/webhook",
         "reportSelfMessage": false,
         "messagePostFormat": "array",
         "token": "U~yiYdCgh6bRtl-~",

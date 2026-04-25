@@ -1,5 +1,6 @@
 package com.memoecho.persistence.controller;
 
+import com.memoecho.common.response.ApiResponse;
 import com.memoecho.persistence.dto.EmailRequest;
 import com.memoecho.persistence.dto.EmailResponse;
 import com.memoecho.persistence.dto.VerifyCodeRequest;
@@ -20,24 +21,23 @@ public class EmailController {
     private EmailMessageService emailMessageService;
 
     @PostMapping("/send-email")
-    public EmailResponse sendEmail(@RequestBody EmailRequest emailRequest){
+    public ApiResponse<EmailResponse> sendEmail(@RequestBody EmailRequest emailRequest){
         try{
-            // 发送邮件
-            return emailMessageService.sendVerificationCode(emailRequest.getEmail());
+            EmailResponse response = emailMessageService.sendVerificationCode(emailRequest.getEmail());
+            return ApiResponse.success(response.getMessage(), response);
         }catch (Exception e){
             log.info("发送失败,",e);
-            return new EmailResponse("500", "发送失败");
-
+            return ApiResponse.fail(500, "发送失败");
         }
     }
 
     @PostMapping("/verify-code")
-    public EmailResponse verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest){
+    public ApiResponse<EmailResponse> verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest){
         try{
-            // 验证码校验
-            return emailMessageService.verifyCode(verifyCodeRequest.getEmail(), verifyCodeRequest.getCode());
+            EmailResponse response = emailMessageService.verifyCode(verifyCodeRequest.getEmail(), verifyCodeRequest.getCode());
+            return ApiResponse.success(response.getMessage(), response);
         }catch (Exception e){
-            return new EmailResponse("500", "验证失败");
+            return ApiResponse.fail(500, "验证失败");
         }
     }
 

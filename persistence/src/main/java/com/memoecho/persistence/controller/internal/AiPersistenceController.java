@@ -34,7 +34,7 @@ import java.util.List;
 public class AiPersistenceController {
     private final MemoServiceImpl memoService;
 
-    @PostMapping("/persistence/memo/save")
+    @PostMapping("/memo/save")
     public Boolean saveMemoToDb(@RequestBody ExtractedMessage msg){
         Memo memo = Memo.builder()
                 .messageId(msg.getOriginalMsgId())
@@ -50,7 +50,7 @@ public class AiPersistenceController {
         return memoService.save(memo);
     }
 
-    @PostMapping("/persistence/memo/get")
+    @PostMapping("/memo/get")
     public List<ExtractedMessage> getFromDB(@RequestBody List<Long> msgIds){
         return memoService.getByIds(msgIds);
     }

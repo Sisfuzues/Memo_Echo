@@ -10,9 +10,9 @@ import java.util.List;
 
 @FeignClient(name = "persistence",contextId = "AIDB")
 public interface PersistenceAiDbClient {
-    @PostMapping("/internal/persistence/memo/save")
+    @PostMapping("/internal/memo/save")
     Boolean saveMemoToDb(@RequestBody ExtractedMessage msg);
 
-    @PostMapping("/internal/persistence/memo/get")
+    @PostMapping("/internal/memo/get")
     public List<ExtractedMessage> getFromDB(@RequestBody List<Long> msgIds);
 }

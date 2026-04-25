@@ -1,8 +1,11 @@
 package com.memoecho.persistence.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.memoecho.memo_echo_apis.dto.ReceivedMessage;
+import com.memoecho.memo_echo_apis.vo.UnsafeGroupVO;
+import com.memoecho.memo_echo_apis.vo.UnsafeMessageVO;
 import com.memoecho.persistence.pojo.UnsafeMessage;
+
+import java.util.List;
 
 public interface UnsafeMessageService extends IService<UnsafeMessage> {
     /**
@@ -18,4 +21,8 @@ public interface UnsafeMessageService extends IService<UnsafeMessage> {
      * &#064;date  2026/4/19 15:12
      */
     boolean updateMsgAndScore(UnsafeMessage msg);
+
+    List<UnsafeGroupVO> getUnsafeGroupInfo();
+
+    List<UnsafeMessageVO> getUnsafeMessageInfo(Long groupId);
 }

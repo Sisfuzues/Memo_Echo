@@ -4,7 +4,7 @@ services:
     container_name: memo_echo_napcat
     environment:
       # ⚠️ 注意：这里填你的 SpringBoot 网关接收地址
-      - WEBHOOK_URL=http://host.docker.internal:8080/api/bot/webhook
+      - WEBHOOK_URL=http://host.docker.internal:8090/api/bot/webhook
     volumes:
       - ./napcat/config:/app/napcat/config
       - ./napcat/qq:/app/.config/QQ

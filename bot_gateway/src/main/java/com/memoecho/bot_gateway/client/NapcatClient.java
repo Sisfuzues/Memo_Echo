@@ -1,11 +1,15 @@
 package com.memoecho.bot_gateway.client;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.memoecho.common.response.NapCatResponse;
+import com.memoecho.memo_echo_apis.vo.FriendInfoVO;
+import com.memoecho.memo_echo_apis.vo.GroupInfoVO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -89,7 +93,11 @@ public interface NapcatClient {
      * @author Sisfuzues
      * @Date 2026/4/21 11:07
      */
-//    JSONObject getGroupList();
+    @PostMapping("/get_group_list")
+    NapCatResponse<List<GroupInfoVO>> getGroupList();
+
+    @PostMapping("/get_friend_list")
+    NapCatResponse<List<FriendInfoVO>> getFriendList();
 
     // ================= 系统信息类 ===================
     @GetMapping("/get_status")
@@ -115,7 +123,7 @@ public interface NapcatClient {
      * @Date 2026/4/21 10:35
      */
     @PostMapping("/set_group_leave")
-    JSONObject setGroupLeave(@RequestBody Map<String,Object> params);
+    NapCatResponse<Void> setGroupLeave(@RequestBody Map<String,Object> params);
 
 
     /**
@@ -128,5 +136,5 @@ public interface NapcatClient {
      * @Date 2026/4/21 10:54
      */
     @PostMapping("/delete_friend")
-    JSONObject deleteFriend(@RequestBody Map<String,Object> params);
+    NapCatResponse<Void> deleteFriend(@RequestBody Map<String,Object> params);
 }
