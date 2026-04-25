@@ -2,6 +2,9 @@ package com.memoecho.persistence.service;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+import java.util.Map;
+
 public interface BotStatusService {
     /**
      *  设置机器人状态
@@ -17,4 +20,6 @@ public interface BotStatusService {
      * @date 2026/4/20 14:45
      */
     Boolean setBotStatus(String botName,int status);
+
+    Map<String,Integer> getBotInfo();
 }

@@ -50,7 +50,7 @@ public class QQBotController {
      */
     @PostMapping("/webhook")
     public String readMessage(@RequestBody String message){
-        log.debug("收到原始信息：{}",message);
+        log.info("收到原始信息：{}",message);
 
         JSONObject jsonObject = JSON.parseObject(message);
         String type = jsonObject.getString("post_type");

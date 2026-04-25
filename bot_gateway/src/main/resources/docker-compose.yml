@@ -6,10 +6,9 @@ services:
       # ⚠️ 注意：这里填你的 SpringBoot 网关接收地址
       - WEBHOOK_URL=http://host.docker.internal:8090/api/bot/webhook
     volumes:
-      - ./napcat/config:/app/napcat/config
-      - ./napcat/qq:/app/.config/QQ
+      - /home/zhouyifei/Docker_Project/napcat/napcat/config:/app/napcat/config
+      - /home/zhouyifei/Docker_Project/napcat/napcat/qq:/app/.config/QQ
     ports:
       - "6099:6099"
       - "3011:3011"
     restart: always
-

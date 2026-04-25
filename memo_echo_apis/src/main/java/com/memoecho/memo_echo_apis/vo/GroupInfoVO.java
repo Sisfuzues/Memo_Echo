@@ -1,6 +1,6 @@
 package com.memoecho.memo_echo_apis.vo;
 
-import com.alibaba.fastjson2.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GroupInfoVO {
-    @JSONField(name = "group_id")
+    @JsonAlias("group_id")
     private Long groupId;
 
-    @JSONField(name = "group_name")
+    @JsonAlias("group_name")
     private String groupName;
 
-    @JSONField(name = "member_count")
+    @JsonAlias("member_count")
     private Long memberCount;
 }

@@ -144,7 +144,7 @@ public class QQBotMessageServiceImpl implements BotMessageService {
         if(Objects.equals(subType, "poke")
                 && Objects.equals(targetId, selfId)
                 && noticeType.equals("notify")){
-            sendGroupMessage(groupId,"[CQ:face,id=21] 喵喵");
+            sendGroupMessage(groupId,"喵喵[CQ:face,id=21]");
         }
     }
 

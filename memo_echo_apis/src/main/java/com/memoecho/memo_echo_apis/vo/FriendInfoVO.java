@@ -1,7 +1,6 @@
 package com.memoecho.memo_echo_apis.vo;
 
-
-import com.alibaba.fastjson2.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,12 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FriendInfoVO {
-    @JSONField(name = "user_id")
+    @JsonAlias("user_id")
     private Long userId;
 
-    @JSONField(name = "nickname")
+    @JsonAlias("nickname")
     private String nickName;
 
-    @JSONField(name = "remark")
+    @JsonAlias("remark")
     private String remark;
 }
