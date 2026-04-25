@@ -11,7 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class PersistenceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(PersistenceApplication.class, args);
+        SpringApplication.run(PersistenceApplication.class, args); // 只需要调用一次
         System.out.println("================");
         System.out.println("    正在测试     ");
         System.out.println("================");
