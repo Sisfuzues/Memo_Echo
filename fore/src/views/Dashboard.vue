@@ -23,6 +23,15 @@
           v-if="isAdmin"
           class="secondary-btn"
           type="button"
+          :disabled="isLoadingScheduleRequests"
+          @click="loadScheduleRequests"
+        >
+          {{ isLoadingScheduleRequests ? '加载中...' : '刷新日程申请' }}
+        </button>
+        <button
+          v-if="isAdmin"
+          class="secondary-btn"
+          type="button"
           :disabled="isLoadingUnsafeGroups"
           @click="loadUnsafeGroups"
         >
@@ -64,6 +73,81 @@
         </div>
 
         <p v-else class="empty-text">当前还没有机器人状态数据。</p>
+      </section>
+
+      <section class="panel schedule-request-panel">
+        <div class="panel-head">
+          <h2>申请托管群日程</h2>
+        </div>
+
+        <div class="request-form-grid">
+          <label class="field compact-field">
+            <span>群号</span>
+            <input
+              v-model.trim="scheduleRequestForm.groupId"
+              type="text"
+              inputmode="numeric"
+              placeholder="请输入需要管理日程的群号"
+            />
+          </label>
+
+          <label class="field compact-field">
+            <span>原因</span>
+            <input
+              v-model.trim="scheduleRequestForm.reason"
+              type="text"
+              maxlength="200"
+              placeholder="可选，例如课程群需要自动提醒作业"
+            />
+          </label>
+
+          <button class="submit-btn inline-submit" type="button" :disabled="isSubmittingScheduleRequest" @click="submitScheduleRequest">
+            {{ isSubmittingScheduleRequest ? '提交中...' : '提交申请' }}
+          </button>
+        </div>
+      </section>
+
+      <section v-if="isAdmin" class="panel schedule-admin-panel">
+        <div class="panel-head">
+          <h2>群日程管理申请</h2>
+          <span class="pill">{{ scheduleRequests.length }}</span>
+        </div>
+
+        <div v-if="isLoadingScheduleRequests" class="empty-text request-loading">正在加载日程申请...</div>
+
+        <div v-else-if="scheduleRequests.length" class="table-wrap">
+          <table class="monitor-table request-table">
+            <thead>
+              <tr>
+                <th>群号</th>
+                <th>申请用户</th>
+                <th>原因</th>
+                <th>提交时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="request in scheduleRequests" :key="request.groupId">
+                <td>{{ request.groupId }}</td>
+                <td>{{ request.requesterUserId || '-' }}</td>
+                <td>{{ request.reason || '未填写' }}</td>
+                <td>{{ formatRequestTime(request.createdAt) }}</td>
+                <td>
+                  <button
+                    class="secondary-btn table-action-btn"
+                    type="button"
+                    :disabled="processingGroupRequestId === String(request.groupId)"
+                    @click="handleBotGroupRequest(request)"
+                  >
+                    {{ processingGroupRequestId === String(request.groupId) ? '处理中...' : '处理' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p v-else class="empty-text">当前还没有群日程管理申请。</p>
       </section>
 
       <section v-if="isAdmin" class="panel risk-panel">
@@ -309,13 +393,17 @@ const friends = ref([]);
 const unsafeGroups = ref([]);
 const unsafeMessages = ref([]);
 const botStatuses = ref({});
+const scheduleRequests = ref([]);
 const selectedUnsafeGroup = ref(null);
 const isLoadingGroups = ref(false);
 const isLoadingFriends = ref(false);
 const isLoadingUnsafeGroups = ref(false);
 const isLoadingUnsafeMessages = ref(false);
 const isLoadingBotInfo = ref(false);
+const isLoadingScheduleRequests = ref(false);
 const isSending = ref(false);
+const isSubmittingScheduleRequest = ref(false);
+const processingGroupRequestId = ref('');
 const deletingGroupId = ref('');
 const deletingFriendId = ref('');
 const pageMessage = ref('');
@@ -325,6 +413,11 @@ const sendForm = reactive({
   targetType: 'group',
   targetId: '',
   content: ''
+});
+
+const scheduleRequestForm = reactive({
+  groupId: '',
+  reason: ''
 });
 
 const monitoredGroups = computed(() => {
@@ -389,6 +482,15 @@ const formatMessageTime = (time) => {
 
   const timestamp = numericTime > 1_000_000_000_000 ? numericTime : numericTime * 1000;
   return new Date(timestamp).toLocaleString();
+};
+
+const formatRequestTime = (time) => {
+  const numericTime = Number(time);
+  if (!Number.isFinite(numericTime) || numericTime <= 0) {
+    return '时间未知';
+  }
+
+  return new Date(numericTime).toLocaleString();
 };
 
 const riskLabel = (score) => {
@@ -480,6 +582,91 @@ const loadBotInfo = async ({ silent = false } = {}) => {
     }
   } finally {
     isLoadingBotInfo.value = false;
+  }
+};
+
+const loadScheduleRequests = async ({ silent = false } = {}) => {
+  isLoadingScheduleRequests.value = true;
+  try {
+    const response = await apiFetch('/api/persistence/admin/schedule/group/requests');
+    const data = await unwrapApiResponse(response, '获取群日程申请失败。');
+    scheduleRequests.value = Array.isArray(data) ? data : [];
+    if (!silent) {
+      setPageMessage('群日程申请已刷新。');
+    }
+  } catch (error) {
+    scheduleRequests.value = [];
+    if (!silent) {
+      setPageMessage(error.message || '获取群日程申请失败。', true);
+    }
+  } finally {
+    isLoadingScheduleRequests.value = false;
+  }
+};
+
+const submitScheduleRequest = async () => {
+  const groupId = Number(scheduleRequestForm.groupId);
+  const reason = scheduleRequestForm.reason.trim();
+
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    setPageMessage('群号必须是正整数。', true);
+    return;
+  }
+
+  if (reason.length > 200) {
+    setPageMessage('原因最多 200 个字符。', true);
+    return;
+  }
+
+  isSubmittingScheduleRequest.value = true;
+  try {
+    const response = await apiFetch('/api/persistence/userops/schedule/group/request', {
+      method: 'POST',
+      json: { groupId, reason }
+    });
+    const request = await unwrapApiResponse(response, '提交群日程申请失败。');
+    setPageMessage('群日程管理申请已提交。');
+    scheduleRequestForm.groupId = '';
+    scheduleRequestForm.reason = '';
+
+    if (isAdmin.value && request) {
+      scheduleRequests.value = [
+        request,
+        ...scheduleRequests.value.filter((item) => String(item.groupId) !== String(request.groupId))
+      ];
+    }
+  } catch (error) {
+    setPageMessage(error.message || '提交群日程申请失败。', true);
+  } finally {
+    isSubmittingScheduleRequest.value = false;
+  }
+};
+
+const handleBotGroupRequest = async (request) => {
+  const groupId = Number(request?.groupId);
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    setPageMessage('群号非法，无法处理。', true);
+    return;
+  }
+
+  processingGroupRequestId.value = String(groupId);
+  try {
+    const response = await apiFetch('/api/bot/group/request', {
+      method: 'POST',
+      json: {
+        groupId,
+        approve: true,
+        subType: 'invite',
+        reason: request?.reason || ''
+      }
+    });
+    const data = await unwrapApiResponse(response, '处理群日程申请失败。');
+    setPageMessage(data?.message || '群日程申请已处理。');
+    await loadGroups();
+  } catch (error) {
+    setPageMessage(error.message || '处理群日程申请失败。', true);
+  } finally {
+    processingGroupRequestId.value = '';
   }
 };
 
@@ -626,6 +813,9 @@ const handleLogout = async () => {
 onMounted(async () => {
   await Promise.all([loadGroups(), loadFriends()]);
   await loadUnsafeGroups();
+  if (isAdmin.value) {
+    await loadScheduleRequests({ silent: true });
+  }
 });
 </script>
 
@@ -702,6 +892,11 @@ h1 {
   margin-top: 24px;
 }
 
+.schedule-request-panel,
+.schedule-admin-panel {
+  margin-top: 24px;
+}
+
 .unsafe-detail-panel {
   margin-top: 20px;
 }
@@ -730,6 +925,37 @@ h1 {
 .table-wrap {
   margin-top: 16px;
   overflow: auto;
+}
+
+.request-form-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(240px, 1.3fr) auto;
+  gap: 14px;
+  align-items: end;
+  margin-top: 4px;
+}
+
+.compact-field {
+  margin-top: 12px;
+}
+
+.inline-submit {
+  margin-top: 12px;
+  min-width: 116px;
+  height: 48px;
+}
+
+.request-loading {
+  margin-top: 16px;
+}
+
+.request-table {
+  min-width: 840px;
+}
+
+.table-action-btn {
+  padding: 8px 12px;
+  white-space: nowrap;
 }
 
 .monitor-table {
@@ -1108,6 +1334,10 @@ textarea {
   }
 
   .message-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .request-form-grid {
     grid-template-columns: 1fr;
   }
 

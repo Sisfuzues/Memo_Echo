@@ -3,7 +3,10 @@ package com.memoecho.bot_gateway.controller;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.memoecho.bot_gateway.client.NapcatClient;
+import com.memoecho.bot_gateway.dto.BotGroupRequestDTO;
+import com.memoecho.bot_gateway.dto.BotGroupRequestResult;
 import com.memoecho.bot_gateway.dto.BotSendTextRequest;
+import com.memoecho.bot_gateway.service.BotGroupOpsService;
 import com.memoecho.bot_gateway.service.Impl.QQBotMessageServiceImpl;
 import com.memoecho.common.response.ApiResponse;
 import com.memoecho.common.response.NapCatResponse;
@@ -35,6 +38,7 @@ import java.util.Map;
 public class QQBotController {
     private final QQBotMessageServiceImpl botMessageService;
     private final NapcatClient napcatClient;
+    private final BotGroupOpsService botGroupOpsService;
 
     /**
      *  获取机器人的所有信息
@@ -123,6 +127,25 @@ public class QQBotController {
             return ApiResponse.fail(502, "获取好友列表失败。");
         }
         return ApiResponse.success(friendList.getData());
+    }
+
+    @PostMapping("/group/request")
+    public ApiResponse<BotGroupRequestResult> handleGroupRequest(@RequestBody BotGroupRequestDTO request) {
+        if (request == null) {
+            return ApiResponse.fail(400, "请求体不能为空。");
+        }
+
+        if ((request.getGroupId() == null || request.getGroupId() <= 0)
+                && (request.getFlag() == null || request.getFlag().trim().isEmpty())) {
+            return ApiResponse.fail(400, "groupId 和 flag 至少要提供一个。");
+        }
+
+        BotGroupRequestResult result = botGroupOpsService.handleGroupRequest(request);
+        if ("ALREADY_IN_GROUP".equals(result.getStatus()) || "REQUEST_HANDLED".equals(result.getStatus())) {
+            return ApiResponse.success(result.getMessage(), result);
+        }
+
+        return ApiResponse.fail(409, result.getMessage());
     }
 
     @DeleteMapping("/group/{groupId}")

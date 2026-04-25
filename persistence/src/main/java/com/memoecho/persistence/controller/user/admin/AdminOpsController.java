@@ -3,6 +3,7 @@ package com.memoecho.persistence.controller.user.admin;
 import com.memoecho.common.response.ApiResponse;
 import com.memoecho.memo_echo_apis.vo.UnsafeGroupVO;
 import com.memoecho.memo_echo_apis.vo.UnsafeMessageVO;
+import com.memoecho.persistence.dto.ScheduleGroupRequestVO;
 import com.memoecho.persistence.mapper.UserMessageMapper;
 import com.memoecho.persistence.pojo.DTO.Bot;
 import com.memoecho.persistence.pojo.DTO.FriendRequest;
@@ -14,6 +15,7 @@ import com.memoecho.persistence.pojo.User;
 import com.memoecho.persistence.service.AdminOpsService;
 import com.memoecho.persistence.service.BotStatusService;
 import com.memoecho.persistence.service.UnsafeMessageService;
+import com.memoecho.persistence.service.UserOpsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -48,6 +50,7 @@ public class AdminOpsController {
     private final BotStatusService botStatusService;
     private final UserMessageMapper userMessageMapper;
     private final AdminOpsService adminOpsService;
+    private final UserOpsService userOpsService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/group/unsafe")
@@ -68,6 +71,13 @@ public class AdminOpsController {
     public ApiResponse<Map<String, Integer>> getBotInfo() {
         Map<String, Integer> res = botStatusService.getBotInfo();
         return ApiResponse.success("获取机器人状态成功", res);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/schedule/group/requests")
+    public ApiResponse<List<ScheduleGroupRequestVO>> listScheduleGroupRequests() {
+        List<ScheduleGroupRequestVO> requests = userOpsService.listScheduleGroupRequests();
+        return ApiResponse.success("获取群日程管理申请成功", requests);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

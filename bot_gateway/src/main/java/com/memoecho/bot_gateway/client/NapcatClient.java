@@ -125,6 +125,9 @@ public interface NapcatClient {
     @PostMapping("/set_group_leave")
     NapCatResponse<Void> setGroupLeave(@RequestBody Map<String,Object> params);
 
+    @PostMapping("/set_group_add_request")
+    NapCatResponse<Void> setGroupAddRequest(@RequestBody Map<String,Object> params);
+
 
     /**
      * 🐊 控制机器人删除好友
