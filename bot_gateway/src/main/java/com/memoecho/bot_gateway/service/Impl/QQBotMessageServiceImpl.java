@@ -133,6 +133,48 @@ public class QQBotMessageServiceImpl implements BotMessageService {
         mqService.sendToMQ(receivedMessage,topic,tag,key);
     }
 
+    private void handleNoticeMessage(JSONObject message) {
+        log.info("收到notice消息:{}",message.toString());
+        String noticeType = message.getString("notice_type");
+        String subType = message.getString("sub_type");
+        Long selfId = message.getLong("self_id");
+        Long groupId = message.getLong("group_id");
+        Long targetId = message.getLong("target_id");
+
+        if(Objects.equals(subType, "poke")
+                && Objects.equals(targetId, selfId)
+                && noticeType.equals("notify")){
+            sendGroupMessage(groupId,"[CQ:face,id=21] 喵喵");
+        }
+    }
+
+    private void handleRequestMessage(JSONObject message) {
+        ReceivedMessage receivedMessage =
+                JSON.parseObject(message.toString(),ReceivedMessage.class);
+        String test = JSON.toJSONString(receivedMessage);
+
+        Long selfId = receivedMessage.getSelfId();
+
+        // 判断是否为at信息
+        String queryAt = "[CQ:at,qq=" + selfId + "]";
+        String rawMessage = receivedMessage.getRawMessage();
+
+        // 设置消息发送的 topic tag key
+        String topic = "bot_gateway-out-1";
+        String tag = "group_msg_received";
+        String key = receivedMessage.getMessageId().toString();  // 用messageID来存储
+        if(rawMessage.contains(queryAt)){
+            log.info("存在@信息。");
+            String messageType = receivedMessage.getMessageType();
+            topic = Objects.equals(messageType, "group") ?
+                    "bot_gateway-out-2":"bot_gateway-out-3";
+            tag = Objects.equals(messageType,"group")?
+                    "group_msg_received":"private_msg_received";
+        }
+        // 用mqService发送消息
+        mqService.sendToMQ(receivedMessage,topic,tag,key);
+    }
+
     @Override
     public void processBotEvent(JSONObject jsonObject, String type) {
         switch (type){
@@ -140,6 +182,7 @@ public class QQBotMessageServiceImpl implements BotMessageService {
                 handleChatMessage(jsonObject);
                 break;
             case "notice":
+                handleNoticeMessage(jsonObject);
                 break;
             case "request":
                 break;

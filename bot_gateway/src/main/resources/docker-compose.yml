@@ -12,14 +12,4 @@ services:
       - "6099:6099"
       - "3011:3011"
     restart: always
-  nacos:
-    image: nacos/nacos-server:v2.3.2
-    container_name: nacos-standalone
-    environment:
-      - MODE=standalone
-      - JVM_XMS=256m
-      - JVM_XMX=256m
-    ports:
-      - "8848:8848"
-      - "9848:9848"
-    restart: always
+
