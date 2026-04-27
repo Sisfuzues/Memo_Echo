@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: bot_gateway
+    name: bot-gateway
 
   cloud:
     nacos:
@@ -28,3 +28,10 @@ spring:
           binder:
             name-server: 127.0.0.1:9876
             vip-channel-enabled: false
+
+napcat:
+  url: http://127.0.0.1:3011
+  token: "Bearer 1TTQ51pa-Q_Hr7kl"
+
+jwt:
+  secret: ${JWT_SECRET:c2VjcmV0S2V5Rm9ySld0VG9rZW5HZW5lcmF0aW9uSW5TcHJpbmdCb290QXBwbGljYXRpb24=}

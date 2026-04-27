@@ -9,10 +9,15 @@ import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
+import org.apache.rocketmq.common.message.Message;
 import org.testcontainers.qdrant.QdrantContainer;
 
 import javax.swing.tree.AbstractLayoutCache;
 import java.awt.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -20,9 +25,10 @@ import java.util.concurrent.ExecutionException;
 
 
 public class EBDemo_2 {
-    private static int port = 6334;//使用的端口协议  这里为gRPC
+    private static int port = 6334;//使用的端口协议 入库与检索时使用
+    private static int httpport = 6333;//建表时使用
     private static String collectionName = "langchain4j-1";//使用的表名
-    private static int dimension = 384;//语义向量维度
+    private static int dimension = 512;//语义向量维度  需要使用模型支持的维度
 
     //embeddingModel
     private static OpenAiEmbeddingModel embeddingModel = OpenAiEmbeddingModel.builder()
@@ -32,6 +38,25 @@ public class EBDemo_2 {
             .dimensions(dimension)
             .build();
 
+    private static void createCollection(String host, int port) throws Exception {
+        String json = """
+    {
+      "vectors": {
+        "size": 512,
+        "distance": "Cosine"
+      }
+    }
+    """;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://" + host + ":" + port + "/collections/" + collectionName))
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
 
     //测试本地的qdrand数据库实例
     public static void qdrandRAG(){
@@ -40,6 +65,9 @@ public class EBDemo_2 {
             qdrant.start();    //检测docker是否可用 执行拉取 创建并启动容器 将容器的6333与6334端口映射在本地的随机端口
             String host = qdrant.getHost();//获取qdrand实例所在本地ip地址
             Integer tPort = qdrant.getMappedPort(port);//获取port对应的本地端口
+            Integer htPort = qdrant.getMappedPort(httpport);
+
+            createCollection(host,htPort);//建表
 
             //实例化embeddingStore
             EmbeddingStore<TextSegment> embeddingStore =
@@ -75,6 +103,9 @@ public class EBDemo_2 {
 
 
         }//容器闭包
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
 
     }

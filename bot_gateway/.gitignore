@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+bot_gateway/src/main/resources/qrcode.png
+bot_gateway/src/main/resources/napcat/

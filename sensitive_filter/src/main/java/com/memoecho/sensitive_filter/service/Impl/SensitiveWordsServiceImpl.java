@@ -5,6 +5,7 @@ import com.memoecho.memo_echo_apis.dto.ReceivedMessage;
 import com.memoecho.sensitive_filter.pojo.SensitiveWords;
 import com.memoecho.sensitive_filter.service.SensitiveWordsService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,8 @@ import java.util.TreeMap;
 @Service
 @Slf4j(topic = "敏感词筛查")
 public class SensitiveWordsServiceImpl implements SensitiveWordsService {
-
+    @Autowired
+    private MQServiceImpl mqService;
     private AhoCorasickDoubleArrayTrie<SensitiveWords> acdat;
 
     @Value("${bot.dict.cache_path:./sensitive_words.bin}")
@@ -126,9 +128,30 @@ public class SensitiveWordsServiceImpl implements SensitiveWordsService {
             resTotal += hit.value.getValue();
         }
 //        System.out.println(resTotal);
-
         // 是否被斩杀
         msg.setFilterScore(resTotal);
         return resTotal > SensitiveWords.Constant.DANGER_SCORE;
+    }
+
+    @Override
+    public void handleConsumerMsg(String safeTopic, String safeTags, String unsafeTopic, String unsafeTags,
+                                  ReceivedMessage payload) {
+        log.info("开始处理消费的信息。");
+        // 是否被斩杀
+        String topic,tag,key;
+        key = payload.getMessageId().toString();
+        if(sensitiveWordsKill(payload)){
+            payload.setFilterStatus(ReceivedMessage.FilterStatus.UNSAFE);
+            topic = unsafeTopic;
+            tag = unsafeTags;
+            mqService.sendToMQ(payload,topic,tag,key);
+        }else{
+            payload.setFilterStatus(ReceivedMessage.FilterStatus.SAFE);
+        }
+
+        // 不管有没有筛选过，都发送给AI
+        topic = safeTopic;
+        tag = safeTags;
+        mqService.sendToMQ(payload,topic,tag,key);
     }
 }

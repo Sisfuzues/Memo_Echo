@@ -1,0 +1,51 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: api_gateway
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+    gateway:
+      # 全局跨域配置（写在这里，后面的微服务就不用配 @CrossOrigin 了）
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: ai_brain_route
+          uri: lb://ai_brain
+          predicates:
+            - Path=/api/ai_brain/**
+          filters:
+            - StripPrefix=2
+
+        - id: persistence_route
+          uri: lb://persistence
+          predicates:
+            - Path=/api/persistence/**
+          filters:
+            - StripPrefix=2
+
+        - id: bot_gateway_route
+          uri: lb://bot-gateway
+          predicates:
+            - Path=/api/bot/**
+          filters:
+            - StripPrefix=1
+
+        - id: sensitive_filter_route
+          uri: lb://sensitive_filter
+          predicates:
+            - Path=/api/sensitive_filter/**
+          filters:
+            - StripPrefix=2
