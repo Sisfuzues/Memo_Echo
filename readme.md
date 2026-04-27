@@ -37,6 +37,10 @@
 
 ![演示图3](document/Image/成品演示图5.png)
 
+## 项目架构图
+
+![流程图](document/Image/MemoEcho架构图.png)
+
 ## 项目结构
 ---
 
@@ -170,3 +174,36 @@ services:
 - 前端说明: [`fore/README.md`](fore/README.md)
 - 机器人部署说明: [`document/readme.md`](document/readme.md)
 
+## 🤝 参与贡献
+---
+欢迎大家提交 Issue 和 Pull Request！如果你有好的想法或发现了 Bug，请随时与我联系。
+由于开发者目前还是学生，精力和时间有限，回复可能不够及时，请谅解~ ❤️
+
+
+## 📞 联系作者
+---
+- **Email**: 
+  - [Sisfuze的邮箱](zhou.yifei15450@gmail.com)
+- **Blog / GitHub**:
+   - [Sisfuze](https://github.com/Sisfuzues/Memo_Echo)
+
+## 🙏 特别感谢
+
+除了众多优秀的开源框架外，特别感谢以下个人对本项目的帮助与贡献：
+
+<div align="left">
+  <a href="https://github.com/DreamyGlaze">
+    <img src="https://avatars.githubusercontent.com/DreamyGlaze" width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
+  </a>
+  <a href="https://github.com/zoujan1433223-lgtm">
+    <img src="https://avatars.githubusercontent.com/zoujan1433223-lgtm" width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
+  </a>
+  <a href="https://github.com/big-orange947">
+    <img src="https://avatars.githubusercontent.com/big-orange947" width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
+  </a>
+  <a href="https://github.com/zoujan1433223-lgtm">
+    <img src="https://avatars.githubusercontent.com/zoujan1433223-lgtm width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
+  </a>
+</div>
+
+*如果你也对本项目感兴趣，欢迎成为我们的代码贡献者！*
