@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 
 @Data
@@ -13,6 +14,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class ReceivedMessage implements Serializable {
     private Long time;
+
     @JSONField(name = "self_id")
     private Long selfId;
 
@@ -38,28 +40,33 @@ public class ReceivedMessage implements Serializable {
 
     @JSONField(name = "raw_message")
     private String rawMessage;
+
     private Sender sender;
+
     @JSONField(name = "filter_score")
     private int filterScore;
 
     @Builder.Default
-    private FilterStatus filterStatus = FilterStatus.UNFILTER; // 这个用来判断有没有经历过筛选
+    private FilterStatus filterStatus = FilterStatus.UNFILTER;
 
-    public enum FilterStatus{
-        UNFILTER,  // 初始的未过滤的信息
-        SAFE,      // 已经过滤的安全信息
-        UNSAFE     // 过滤后的不安全信息
+    public enum FilterStatus {
+        UNFILTER,
+        SAFE,
+        UNSAFE,
+        SPAM
     }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Sender implements Serializable{
+    public static class Sender implements Serializable {
         @JSONField(name = "user_id")
         private Long userId;
+
         private String role;
-        private String card;      // 群名片
-        private String nickname;  // 全局昵称
+
+        private String card;
+
+        private String nickname;
     }
 }
-

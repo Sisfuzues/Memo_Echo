@@ -4,26 +4,19 @@ server:
 spring:
   application:
     name: sensitive_filter
+  data:
+    redis:
+      host: ${MEMOECHO_REDIS_HOST:127.0.0.1}
+      port: ${MEMOECHO_REDIS_PORT:6380}
+      password: ${MEMOECHO_REDIS_PASSWORD:123456}
+      database: ${MEMOECHO_REDIS_DB:0}
   cloud:
     nacos:
-      discovery: # 必须是 discovery
-        server-addr: 127.0.0.1:8848 # Nacos 的本地地址
-
-
+      discovery:
+        server-addr: 127.0.0.1:8848
     function:
-      definition: botMsgConsumer;groupNeedsConsumer;privateNeedsConsumer               # 只有定义的组件才能分到MQ的流量
-    # 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
-    # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
+      definition: botMsgConsumer;groupNeedsConsumer;privateNeedsConsumer
     stream:
-#        bot_gateway-out-1_1:
-#          destination: topic_bot_messages
-#          content-type: application/json
-#        bot_gateway-out-2_1:
-#          destination: topic_group_needs
-#          content-type: application/json
-#        bot_gateway-out-3_1:
-#          destination: topic_user_needs
-#          content-type: application/json
       rocketmq:
         binder:
           name-server: 127.0.0.1:9876
@@ -46,7 +39,7 @@ spring:
           destination: topic_group_needs_raw
           group: sensitive-filter-group-needs
         privateNeedsConsumer-in-0:
-          destination: topic_private_needs_raw
+          destination: topic_user_needs_raw
           group: sensitive-filter-private-needs
         sensitive_filter-out-1:
           destination: topic_msg_clean
@@ -58,5 +51,5 @@ spring:
           destination: topic_group_needs_clean
           content-type: application/json
         sensitive_filter-out-4:
-          destination: topic_user_needs_raw
+          destination: topic_user_needs_clean
           content-type: application/json
