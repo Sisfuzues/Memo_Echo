@@ -7,14 +7,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 127.0.0.1:8848 # Nacos 的本地地址
-
-    # 🚨 修正：function 必须和 stream 平级！
+        server-addr: 127.0.0.1:8848
     function:
-      definition: CleanMsgConsumer;CleanGroupRequestConsumer;CleanPrivateRequestConsumer         # 只有定义的组件才能分到MQ的流量
-
-    # 提前预警：等你后面要打开 RocketMQ 时，注意端口号！
-    # 我们 Docker 里配置的 NameServer 端口是 9876，不是 9090
+      definition: CleanMsgConsumer;CleanGroupRequestConsumer;CleanPrivateRequestConsumer
     stream:
       rocketmq:
         binder:
@@ -27,6 +22,9 @@ spring:
           CleanGroupRequestConsumer-in-0:
             consumer:
               tags: group_msg_filtered
+          CleanPrivateRequestConsumer-in-0:
+            consumer:
+              tags: private_msg_filtered
       bindings:
         CleanMsgConsumer-in-0:
           destination: topic_msg_clean
@@ -42,11 +40,11 @@ memo-echo:
   ai:
     dashscope:
       api-key: sk-363167240c50469c823d9e2e72ba8da8
-      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1    # 模型地址
-      model-name: text-embedding-v4                                  # 向量模型名字
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      model-name: text-embedding-v4
       chat-modul-name: qwen-plus
-      dimension: 512                                                 # 向量纬度
+      dimension: 512
     qdrant:
-      host: 127.0.0.1                            # 向量数据库地址，这里我们真实部署要替换成真实的网址
-      port: 6334                                 # 端口
-      collection-name: schedule_embeddings       # 向量表名字
+      host: 127.0.0.1
+      port: 6334
+      collection-name: schedule_embeddings
