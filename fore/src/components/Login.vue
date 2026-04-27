@@ -154,7 +154,8 @@ const handleLogin = async () => {
   font-size: clamp(1.65rem, 3vw, 2.05rem);
   line-height: 1.15;
   color: #17171c;
-  font-weight: 760;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 700;
 }
 
 .eyebrow {
@@ -189,20 +190,20 @@ const handleLogin = async () => {
 input {
   display: block;
   width: 100%;
-  border: 1px solid #d9dce7;
+  border: 1px solid #e5e7eb;
   border-radius: var(--radius-control);
   padding: 14px 16px;
-  background: #fff;
+  background: #f9fafb;
   color: #17171c;
   box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 input:focus {
   outline: none;
-  border-color: rgba(108, 92, 231, 0.62);
-  box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.12);
-  transform: translateY(-1px);
+  border-color: rgba(108, 92, 231, 0.42);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.10);
 }
 
 .password-field {

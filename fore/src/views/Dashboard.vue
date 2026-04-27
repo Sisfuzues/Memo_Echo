@@ -1,5 +1,5 @@
 <template>
-  <main class="dashboard-page">
+  <main class="dashboard-page" :class="{ 'theme-light': isLightTheme }">
     <aside class="dashboard-sidebar">
       <div class="sidebar-brand">
         <span class="brand-mark">ME</span>
@@ -27,64 +27,76 @@
         </button>
       </nav>
 
+      <div class="settings-menu" :class="{ open: showSettings }">
+        <button class="settings-btn" type="button" @click="showSettings = !showSettings">
+          <span>设置</span>
+          <strong>{{ showSettings ? '收起' : '打开' }}</strong>
+        </button>
+
+        <div v-if="showSettings" class="settings-panel">
+          <button class="setting-row" type="button" @click="toggleTheme">
+            <span>主题模式</span>
+            <strong>{{ isLightTheme ? '浅色' : '深色' }}</strong>
+          </button>
+        </div>
+      </div>
       <button class="logout-btn" type="button" @click="handleLogout">退出登录</button>
     </aside>
 
     <section class="dashboard-main">
       <div class="header-row">
         <div>
-          <p class="eyebrow">{{ isAdmin ? currentAdminTabLabel : 'Schedule Request' }}</p>
           <h1>{{ isAdmin ? currentAdminTabTitle : '群日程托管申请' }}</h1>
           <p class="summary">{{ isAdmin ? currentAdminTabDescription : '提交需要机器人托管日程的群聊，等待管理员审核。' }}</p>
         </div>
-      </div>
 
-      <div v-if="isAdmin" class="toolbar">
-        <button
-          v-if="activeAdminTab === 'directory'"
-          class="secondary-btn"
-          type="button"
-          :disabled="isLoadingGroups"
-          @click="loadGroups"
-        >
-          {{ isLoadingGroups ? '加载中...' : '刷新群列表' }}
-        </button>
-        <button
-          v-if="activeAdminTab === 'directory'"
-          class="secondary-btn"
-          type="button"
-          :disabled="isLoadingFriends"
-          @click="loadFriends"
-        >
-          {{ isLoadingFriends ? '加载中...' : '刷新好友列表' }}
-        </button>
-        <button
-          v-if="activeAdminTab === 'requests'"
-          class="secondary-btn"
-          type="button"
-          :disabled="isLoadingScheduleRequests"
-          @click="loadScheduleRequests"
-        >
-          {{ isLoadingScheduleRequests ? '加载中...' : '刷新日程申请' }}
-        </button>
-        <button
-          v-if="activeAdminTab === 'risk'"
-          class="secondary-btn"
-          type="button"
-          :disabled="isLoadingUnsafeGroups"
-          @click="loadUnsafeGroups"
-        >
-          {{ isLoadingUnsafeGroups ? '加载中...' : '刷新风险监控' }}
-        </button>
-        <button
-          v-if="activeAdminTab === 'directory'"
-          class="secondary-btn"
-          type="button"
-          :disabled="isLoadingBotInfo"
-          @click="loadBotInfo"
-        >
-          {{ isLoadingBotInfo ? '加载中...' : '刷新机器人状态' }}
-        </button>
+        <div v-if="isAdmin" class="toolbar">
+          <button
+            v-if="activeAdminTab === 'directory'"
+            class="secondary-btn"
+            type="button"
+            :disabled="isLoadingGroups"
+            @click="loadGroups"
+          >
+            {{ isLoadingGroups ? '加载中...' : '刷新群列表' }}
+          </button>
+          <button
+            v-if="activeAdminTab === 'directory'"
+            class="secondary-btn"
+            type="button"
+            :disabled="isLoadingFriends"
+            @click="loadFriends"
+          >
+            {{ isLoadingFriends ? '加载中...' : '刷新好友列表' }}
+          </button>
+          <button
+            v-if="activeAdminTab === 'requests'"
+            class="secondary-btn"
+            type="button"
+            :disabled="isLoadingScheduleRequests"
+            @click="loadScheduleRequests"
+          >
+            {{ isLoadingScheduleRequests ? '加载中...' : '刷新日程申请' }}
+          </button>
+          <button
+            v-if="activeAdminTab === 'risk'"
+            class="secondary-btn"
+            type="button"
+            :disabled="isLoadingUnsafeGroups"
+            @click="loadUnsafeGroups"
+          >
+            {{ isLoadingUnsafeGroups ? '加载中...' : '刷新风险监控' }}
+          </button>
+          <button
+            v-if="activeAdminTab === 'directory'"
+            class="secondary-btn"
+            type="button"
+            :disabled="isLoadingBotInfo"
+            @click="loadBotInfo"
+          >
+            {{ isLoadingBotInfo ? '加载中...' : '刷新机器人状态' }}
+          </button>
+        </div>
       </div>
 
       <p v-if="pageMessage" class="feedback" :class="pageMessageIsError ? 'feedback-error' : 'feedback-success'">
@@ -203,7 +215,13 @@
           </table>
         </div>
 
-        <p v-else class="empty-text">当前还没有群日程管理申请。</p>
+        <div v-else class="empty-state">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11Z" />
+            <path d="M4.5 14h4l1.6 2h3.8l1.6-2h4" />
+          </svg>
+          <p>当前还没有群日程管理申请</p>
+        </div>
       </section>
 
       <section v-if="isAdmin && activeAdminTab === 'risk'" class="panel risk-panel tab-panel">
@@ -479,6 +497,9 @@ const deletingGroupId = ref('');
 const deletingFriendId = ref('');
 const pageMessage = ref('');
 const pageMessageIsError = ref(false);
+const showSettings = ref(false);
+const isLightTheme = ref(false);
+let pageMessageTimer = null;
 
 const sendForm = reactive({
   targetType: 'group',
@@ -516,8 +537,17 @@ const botStatusList = computed(() =>
 );
 
 const setPageMessage = (message, isError = false) => {
+  if (pageMessageTimer) {
+    window.clearTimeout(pageMessageTimer);
+  }
+
   pageMessage.value = message;
   pageMessageIsError.value = isError;
+  pageMessageTimer = window.setTimeout(() => {
+    pageMessage.value = '';
+    pageMessageIsError.value = false;
+    pageMessageTimer = null;
+  }, isError ? 6500 : 3200);
 };
 
 const unwrapApiResponse = async (response, fallbackMessage) => {
@@ -926,6 +956,10 @@ const handleLogout = async () => {
   await router.push('/');
 };
 
+const toggleTheme = () => {
+  isLightTheme.value = !isLightTheme.value;
+};
+
 onMounted(async () => {
   await loadUnsafeGroups({ silent: true });
   if (isAdmin.value) {
@@ -939,8 +973,8 @@ onMounted(async () => {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
-  background: #f7f8fb;
-  color: #17171c;
+  background: #0a0a0a;
+  color: #f4f4f5;
 }
 
 .dashboard-sidebar {
@@ -1040,45 +1074,38 @@ onMounted(async () => {
   height: 100vh;
   overflow: auto;
   padding: 28px 32px;
+  background: #0a0a0a;
 }
 
 .header-row {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  align-items: flex-start;
+  align-items: center;
   padding-bottom: 18px;
-  border-bottom: 1px solid #e6e8ef;
-}
-
-.eyebrow {
-  color: #6c5ce7;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.78rem;
-  font-weight: 700;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 h1 {
-  margin-top: 8px;
   font-size: clamp(1.9rem, 3vw, 2.55rem);
   line-height: 1.12;
   font-weight: 760;
+  color: #f4f4f5;
 }
 
 .summary,
 .user-line {
   margin-top: 8px;
-  color: #626779;
+  color: #a1a1aa;
 }
 
 .toolbar {
   display: flex;
   gap: 12px;
-  min-height: 40px;
-  margin-top: 18px;
+  min-height: 38px;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .panel-grid {
@@ -1091,9 +1118,9 @@ h1 {
 .panel {
   padding: 20px;
   border-radius: 10px;
-  background: #fff;
-  border: 1px solid #e6e8ef;
-  box-shadow: 0 1px 2px rgba(15, 16, 21, 0.04);
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);
 }
 
 .bot-status-panel {
@@ -1127,13 +1154,14 @@ h1 {
 .panel-head h2 {
   font-size: 1.05rem;
   font-weight: 760;
+  color: #f4f4f5;
 }
 
 .pill {
   padding: 6px 10px;
   border-radius: 999px;
-  background: #f1f2f8;
-  color: #4f5365;
+  background: rgba(255, 255, 255, 0.06);
+  color: #d4d4d8;
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -1149,17 +1177,17 @@ h1 {
   grid-template-columns: minmax(180px, 0.7fr) minmax(240px, 1.3fr) auto;
   gap: 14px;
   align-items: end;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 .compact-field {
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 .inline-submit {
-  margin-top: 12px;
+  margin-top: 0;
   min-width: 116px;
-  height: 48px;
+  height: 46px;
 }
 
 .request-loading {
@@ -1190,13 +1218,13 @@ h1 {
 .monitor-table th,
 .monitor-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid #eceef4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   text-align: left;
-  color: #17171c;
+  color: #f4f4f5;
 }
 
 .monitor-table th {
-  color: #626779;
+  color: #a1a1aa;
   font-size: 0.9rem;
 }
 
@@ -1207,12 +1235,12 @@ h1 {
 
 .clickable-row:hover,
 .clickable-row:focus {
-  background: #f7f8fb;
+  background: rgba(255, 255, 255, 0.04);
   outline: none;
 }
 
 .clickable-row.active {
-  background: #f3f1ff;
+  background: rgba(108, 92, 231, 0.16);
   box-shadow: inset 3px 0 0 #6c5ce7;
 }
 
@@ -1228,23 +1256,23 @@ h1 {
 }
 
 .risk-normal {
-  background: rgba(66, 125, 78, 0.12);
-  color: #255834;
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
 }
 
 .risk-low {
   background: rgba(47, 128, 237, 0.1);
-  color: #1f6f8b;
+  color: #60a5fa;
 }
 
 .risk-medium {
-  background: rgba(208, 131, 32, 0.16);
-  color: #8a5800;
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
 }
 
 .risk-high {
-  background: rgba(176, 62, 47, 0.14);
-  color: #8b2718;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
 }
 
 .bot-loading {
@@ -1265,9 +1293,9 @@ h1 {
   gap: 12px;
   min-width: 0;
   padding: 14px 16px;
-  border: 1px solid #e6e8ef;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  background: #fafbff;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .bot-status-item div {
@@ -1277,13 +1305,13 @@ h1 {
 }
 
 .bot-status-item strong {
-  color: #17171c;
+  color: #f4f4f5;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
 
 .bot-status-item span {
-  color: #626779;
+  color: #71717a;
   font-size: 0.86rem;
   overflow-wrap: anywhere;
 }
@@ -1299,18 +1327,20 @@ h1 {
 }
 
 .bot-online {
-  background: rgba(66, 125, 78, 0.12);
-  color: #255834;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  color: #4ade80;
 }
 
 .bot-offline {
-  background: rgba(176, 62, 47, 0.12);
-  color: #8b2718;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: #f87171;
 }
 
 .bot-unknown {
   background: rgba(111, 91, 73, 0.12);
-  color: #626779;
+  color: #a1a1aa;
 }
 
 .detail-head {
@@ -1319,7 +1349,7 @@ h1 {
 
 .detail-subtitle {
   margin-top: 6px;
-  color: #626779;
+  color: #a1a1aa;
 }
 
 .detail-subtitle span {
@@ -1341,9 +1371,9 @@ h1 {
 
 .unsafe-message-item {
   padding: 16px;
-  border: 1px solid #e6e8ef;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  background: #fafbff;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .message-topline {
@@ -1355,7 +1385,7 @@ h1 {
 
 .message-score,
 .message-time {
-  color: #626779;
+  color: #a1a1aa;
   font-size: 0.9rem;
 }
 
@@ -1363,8 +1393,8 @@ h1 {
   margin-top: 12px;
   padding: 12px 14px;
   border-radius: 8px;
-  background: #f2f3f8;
-  color: #17171c;
+  background: rgba(255, 255, 255, 0.055);
+  color: #f4f4f5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -1381,13 +1411,13 @@ h1 {
 }
 
 .message-meta dt {
-  color: #626779;
+  color: #a1a1aa;
   font-size: 0.82rem;
 }
 
 .message-meta dd {
   margin-top: 4px;
-  color: #17171c;
+  color: #f4f4f5;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -1402,10 +1432,10 @@ h1 {
 
 .list-item {
   text-align: left;
-  border: 1px solid #e6e8ef;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 14px 16px;
-  background: #fafbff;
+  background: rgba(255, 255, 255, 0.035);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -1420,13 +1450,18 @@ h1 {
 }
 
 .list-item-main strong {
-  color: #17171c;
+  color: #f4f4f5;
+  font-weight: 700;
   overflow-wrap: anywhere;
 }
 
-.list-item-main span,
+.list-item-main span {
+  color: #71717a;
+  overflow-wrap: anywhere;
+}
+
 .empty-text {
-  color: #626779;
+  color: #a1a1aa;
   overflow-wrap: anywhere;
 }
 
@@ -1440,14 +1475,21 @@ h1 {
 }
 
 .danger-btn {
-  border: 0;
+  border: 1px solid rgba(239, 68, 68, 0.18);
   border-radius: 8px;
   padding: 9px 12px;
-  background: rgba(176, 62, 47, 0.12);
-  color: #8b2718;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.danger-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(248, 113, 113, 0.32);
+  box-shadow: 0 0 22px rgba(239, 68, 68, 0.1);
 }
 
 .danger-btn:disabled {
@@ -1468,6 +1510,8 @@ h1 {
 .switch-btn,
 .secondary-btn,
 .submit-btn,
+.settings-btn,
+.setting-row,
 .logout-btn {
   min-height: 36px;
   border: 1px solid transparent;
@@ -1484,6 +1528,8 @@ h1 {
 .switch-btn *,
 .secondary-btn *,
 .submit-btn *,
+.settings-btn *,
+.setting-row *,
 .logout-btn *,
 .danger-btn * {
   color: inherit;
@@ -1491,14 +1537,16 @@ h1 {
 
 .switch-btn,
 .secondary-btn {
-  background: #fff;
-  border-color: #d9dce7;
-  color: #2b2f3d;
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e4e4e7;
 }
 
 .switch-btn:disabled,
 .secondary-btn:disabled,
 .submit-btn:disabled,
+.settings-btn:disabled,
+.setting-row:disabled,
 .logout-btn:disabled,
 .danger-btn:disabled {
   opacity: 0.72;
@@ -1506,8 +1554,8 @@ h1 {
 }
 
 .switch-btn.active {
-  background: #17171c;
-  border-color: #17171c;
+  background: #6c5ce7;
+  border-color: #6c5ce7;
   color: #fff;
 }
 
@@ -1519,7 +1567,7 @@ h1 {
 .field span {
   display: block;
   margin-bottom: 8px;
-  color: #2b2f3d;
+  color: #d4d4d8;
   font-weight: 600;
 }
 
@@ -1527,11 +1575,11 @@ input,
 textarea {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid #d9dce7;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 14px 16px;
-  background: #fff;
-  color: #17171c;
+  background: #111113;
+  color: #f4f4f5;
 }
 
 textarea {
@@ -1547,10 +1595,85 @@ textarea {
   box-shadow: none;
 }
 
+.settings-menu {
+  width: 100%;
+  margin-top: auto;
+  display: grid;
+  gap: 8px;
+}
+
+.settings-btn,
+.setting-row {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e4e4e7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.settings-btn:hover,
+.setting-row:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.settings-btn span,
+.setting-row span {
+  font-size: 0.88rem;
+  color: #a1a1aa;
+}
+
+.settings-btn strong,
+.setting-row strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.settings-panel {
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+}
+
+.setting-row {
+  min-height: 38px;
+}
+
 .logout-btn {
   flex: 0 0 auto;
   width: 100%;
-  margin-top: auto;
+  margin-top: 10px;
+}
+
+.request-form-grid input {
+  height: 46px;
+}
+
+.empty-state {
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  padding: 64px 20px;
+  color: #a1a1aa;
+  text-align: center;
+}
+
+.empty-state svg {
+  width: 46px;
+  height: 46px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  opacity: 0.72;
+}
+
+.empty-state p {
+  color: #a1a1aa;
 }
 
 .feedback {
@@ -1561,13 +1684,188 @@ textarea {
 }
 
 .feedback-success {
-  background: rgba(66, 125, 78, 0.12);
-  color: #255834;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  color: #4ade80;
 }
 
 .feedback-error {
-  background: rgba(176, 62, 47, 0.12);
-  color: #8b2718;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: #f87171;
+}
+
+.dashboard-page.theme-light {
+  background: #f7f8fb;
+  color: #18181b;
+}
+
+.dashboard-page.theme-light .dashboard-sidebar {
+  background: rgba(255, 255, 255, 0.88);
+  color: #18181b;
+  border-right-color: #e4e4e7;
+}
+
+.dashboard-page.theme-light .sidebar-brand {
+  border-bottom-color: #e4e4e7;
+}
+
+.dashboard-page.theme-light .sidebar-brand strong,
+.dashboard-page.theme-light .sidebar-user strong,
+.dashboard-page.theme-light h1,
+.dashboard-page.theme-light .panel-head h2,
+.dashboard-page.theme-light .bot-status-item strong,
+.dashboard-page.theme-light .list-item-main strong,
+.dashboard-page.theme-light .monitor-table td,
+.dashboard-page.theme-light .message-content,
+.dashboard-page.theme-light .message-meta dd {
+  color: #18181b;
+}
+
+.dashboard-page.theme-light .sidebar-brand small,
+.dashboard-page.theme-light .sidebar-user span,
+.dashboard-page.theme-light .summary,
+.dashboard-page.theme-light .user-line,
+.dashboard-page.theme-light .monitor-table th,
+.dashboard-page.theme-light .detail-subtitle,
+.dashboard-page.theme-light .message-score,
+.dashboard-page.theme-light .message-time,
+.dashboard-page.theme-light .message-meta dt,
+.dashboard-page.theme-light .empty-text {
+  color: #71717a;
+}
+
+.dashboard-page.theme-light .list-item-main span,
+.dashboard-page.theme-light .bot-status-item span {
+  color: #a1a1aa;
+}
+
+.dashboard-page.theme-light .dashboard-main {
+  background: #f7f8fb;
+}
+
+.dashboard-page.theme-light .header-row {
+  border-bottom-color: #e4e4e7;
+}
+
+.dashboard-page.theme-light .sidebar-user,
+.dashboard-page.theme-light .panel,
+.dashboard-page.theme-light .bot-status-item,
+.dashboard-page.theme-light .unsafe-message-item,
+.dashboard-page.theme-light .list-item {
+  background: #ffffff;
+  border-color: #e4e4e7;
+  box-shadow: 0 18px 50px rgba(24, 24, 27, 0.06);
+}
+
+.dashboard-page.theme-light .nav-btn {
+  color: #52525b;
+}
+
+.dashboard-page.theme-light .nav-btn:hover {
+  background: #f4f4f5;
+  color: #18181b;
+}
+
+.dashboard-page.theme-light .nav-btn.active {
+  background: #f0efff;
+  color: #18181b;
+}
+
+.dashboard-page.theme-light .pill,
+.dashboard-page.theme-light .switch-btn,
+.dashboard-page.theme-light .secondary-btn,
+.dashboard-page.theme-light .settings-btn,
+.dashboard-page.theme-light .setting-row {
+  background: #ffffff;
+  border-color: #e4e4e7;
+  color: #3f3f46;
+}
+
+.dashboard-page.theme-light .settings-panel {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: #e4e4e7;
+  box-shadow: 0 18px 40px rgba(24, 24, 27, 0.08);
+}
+
+.dashboard-page.theme-light .settings-btn span,
+.dashboard-page.theme-light .setting-row span {
+  color: #71717a;
+}
+
+.dashboard-page.theme-light .settings-btn:hover,
+.dashboard-page.theme-light .setting-row:hover,
+.dashboard-page.theme-light .secondary-btn:hover:not(:disabled),
+.dashboard-page.theme-light .switch-btn:hover:not(:disabled) {
+  background: #f4f4f5;
+  border-color: #d4d4d8;
+}
+
+.dashboard-page.theme-light .monitor-table th,
+.dashboard-page.theme-light .monitor-table td {
+  border-bottom-color: #e4e4e7;
+}
+
+.dashboard-page.theme-light .clickable-row:hover,
+.dashboard-page.theme-light .clickable-row:focus {
+  background: #f4f4f5;
+}
+
+.dashboard-page.theme-light input,
+.dashboard-page.theme-light textarea {
+  background: #f9fafb;
+  border-color: #e4e4e7;
+  color: #18181b;
+}
+
+.dashboard-page.theme-light input:focus,
+.dashboard-page.theme-light textarea:focus {
+  outline: none;
+  border-color: rgba(108, 92, 231, 0.42);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
+.dashboard-page.theme-light .message-content {
+  background: #f4f4f5;
+}
+
+.dashboard-page.theme-light .danger-btn {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.dashboard-page.theme-light .danger-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.12);
+}
+
+.dashboard-page.theme-light .bot-online,
+.dashboard-page.theme-light .risk-normal,
+.dashboard-page.theme-light .feedback-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.dashboard-page.theme-light .bot-offline,
+.dashboard-page.theme-light .risk-high,
+.dashboard-page.theme-light .feedback-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.dashboard-page.theme-light .risk-low {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.dashboard-page.theme-light .risk-medium {
+  background: #fffbeb;
+  color: #92400e;
 }
 
 @media (max-width: 900px) {
