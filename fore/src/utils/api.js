@@ -1,4 +1,4 @@
-import { getAuthToken } from '@/utils/auth';
+import { clearAuth, getAuthToken } from '@/utils/auth';
 
 export const apiFetch = async (path, options = {}) => {
   const {
@@ -26,5 +26,14 @@ export const apiFetch = async (path, options = {}) => {
     }
   }
 
-  return fetch(path, requestOptions);
+  const response = await fetch(path, requestOptions);
+
+  if (auth && response.status === 401) {
+    clearAuth();
+    if (window.location.pathname !== '/') {
+      window.location.assign('/');
+    }
+  }
+
+  return response;
 };

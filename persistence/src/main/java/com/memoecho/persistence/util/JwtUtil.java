@@ -33,6 +33,10 @@ public class JwtUtil {
     }
 
     public String createToken(String userId) {
+        return createToken(userId, null);
+    }
+
+    public String createToken(String userId, String role) {
         if (userId == null || userId.isEmpty()) {
             throw new IllegalArgumentException("用户ID不能为空");
         }
@@ -40,12 +44,16 @@ public class JwtUtil {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(userId)
                 .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(getSigningKey())
-                .compact();
+                .expiration(expiryDate);
+
+        if (role != null && !role.isBlank()) {
+            builder.claim("role", role);
+        }
+
+        return builder.signWith(getSigningKey()).compact();
     }
 
     public boolean validateJwtToken(String token) {

@@ -141,7 +141,9 @@ public class QQBotController {
         }
 
         BotGroupRequestResult result = botGroupOpsService.handleGroupRequest(request);
-        if ("ALREADY_IN_GROUP".equals(result.getStatus()) || "REQUEST_HANDLED".equals(result.getStatus())) {
+        if ("ALREADY_IN_GROUP".equals(result.getStatus())
+                || "REQUEST_HANDLED".equals(result.getStatus())
+                || "NEED_INVITE".equals(result.getStatus())) {
             return ApiResponse.success(result.getMessage(), result);
         }
 

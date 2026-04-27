@@ -1,26 +1,65 @@
 <template>
   <main class="dashboard-page">
-    <section class="dashboard-card">
-      <div class="header-row">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-mark">ME</span>
         <div>
-          <p class="eyebrow">Dashboard</p>
-          <h1>机器人控制台</h1>
-          <p class="summary">当前前端已经通过网关访问 bot_gateway 和 persistence。</p>
-          <p class="user-line">当前用户ID：{{ currentUserId || '未知' }}</p>
-          <p class="user-line">当前身份：{{ isAdmin ? '管理员' : '普通用户' }}</p>
+          <strong>Memo Echo</strong>
+          <small>{{ isAdmin ? 'Admin workspace' : 'User workspace' }}</small>
         </div>
-        <button class="logout-btn" type="button" @click="handleLogout">退出登录</button>
       </div>
 
-      <div class="toolbar">
-        <button class="secondary-btn" type="button" :disabled="isLoadingGroups" @click="loadGroups">
+      <div class="sidebar-user">
+        <span>用户 {{ currentUserId || '未知' }}</span>
+        <strong>{{ isAdmin ? '管理员' : '普通用户' }}</strong>
+      </div>
+
+      <nav v-if="isAdmin" class="sidebar-nav" aria-label="管理员功能分类">
+        <button
+          v-for="tab in adminTabs"
+          :key="tab.key"
+          class="nav-btn"
+          :class="{ active: activeAdminTab === tab.key }"
+          type="button"
+          @click="activeAdminTab = tab.key"
+        >
+          <span>{{ tab.label }}</span>
+        </button>
+      </nav>
+
+      <button class="logout-btn" type="button" @click="handleLogout">退出登录</button>
+    </aside>
+
+    <section class="dashboard-main">
+      <div class="header-row">
+        <div>
+          <p class="eyebrow">{{ isAdmin ? currentAdminTabLabel : 'Schedule Request' }}</p>
+          <h1>{{ isAdmin ? currentAdminTabTitle : '群日程托管申请' }}</h1>
+          <p class="summary">{{ isAdmin ? currentAdminTabDescription : '提交需要机器人托管日程的群聊，等待管理员审核。' }}</p>
+        </div>
+      </div>
+
+      <div v-if="isAdmin" class="toolbar">
+        <button
+          v-if="activeAdminTab === 'directory'"
+          class="secondary-btn"
+          type="button"
+          :disabled="isLoadingGroups"
+          @click="loadGroups"
+        >
           {{ isLoadingGroups ? '加载中...' : '刷新群列表' }}
         </button>
-        <button class="secondary-btn" type="button" :disabled="isLoadingFriends" @click="loadFriends">
+        <button
+          v-if="activeAdminTab === 'directory'"
+          class="secondary-btn"
+          type="button"
+          :disabled="isLoadingFriends"
+          @click="loadFriends"
+        >
           {{ isLoadingFriends ? '加载中...' : '刷新好友列表' }}
         </button>
         <button
-          v-if="isAdmin"
+          v-if="activeAdminTab === 'requests'"
           class="secondary-btn"
           type="button"
           :disabled="isLoadingScheduleRequests"
@@ -29,7 +68,7 @@
           {{ isLoadingScheduleRequests ? '加载中...' : '刷新日程申请' }}
         </button>
         <button
-          v-if="isAdmin"
+          v-if="activeAdminTab === 'risk'"
           class="secondary-btn"
           type="button"
           :disabled="isLoadingUnsafeGroups"
@@ -38,7 +77,7 @@
           {{ isLoadingUnsafeGroups ? '加载中...' : '刷新风险监控' }}
         </button>
         <button
-          v-if="isAdmin"
+          v-if="activeAdminTab === 'directory'"
           class="secondary-btn"
           type="button"
           :disabled="isLoadingBotInfo"
@@ -52,7 +91,7 @@
         {{ pageMessage }}
       </p>
 
-      <section v-if="isAdmin" class="panel bot-status-panel">
+      <section v-if="isAdmin && activeAdminTab === 'directory'" class="panel bot-status-panel tab-panel">
         <div class="panel-head">
           <h2>机器人状态</h2>
           <span class="pill">{{ botStatusList.length }}</span>
@@ -75,7 +114,14 @@
         <p v-else class="empty-text">当前还没有机器人状态数据。</p>
       </section>
 
-      <section class="panel schedule-request-panel">
+      <section v-if="!isAdmin" class="panel user-home-panel">
+        <div class="panel-head">
+          <h2>群日程托管申请</h2>
+        </div>
+        <p class="empty-text">普通用户可提交群日程托管申请，管理员审核通过后机器人会加入对应群聊。</p>
+      </section>
+
+      <section v-if="!isAdmin || activeAdminTab === 'requests'" class="panel schedule-request-panel tab-panel">
         <div class="panel-head">
           <h2>申请托管群日程</h2>
         </div>
@@ -107,7 +153,7 @@
         </div>
       </section>
 
-      <section v-if="isAdmin" class="panel schedule-admin-panel">
+      <section v-if="isAdmin && activeAdminTab === 'requests'" class="panel schedule-admin-panel">
         <div class="panel-head">
           <h2>群日程管理申请</h2>
           <span class="pill">{{ scheduleRequests.length }}</span>
@@ -133,14 +179,24 @@
                 <td>{{ request.reason || '未填写' }}</td>
                 <td>{{ formatRequestTime(request.createdAt) }}</td>
                 <td>
-                  <button
-                    class="secondary-btn table-action-btn"
-                    type="button"
-                    :disabled="processingGroupRequestId === String(request.groupId)"
-                    @click="handleBotGroupRequest(request)"
-                  >
-                    {{ processingGroupRequestId === String(request.groupId) ? '处理中...' : '处理' }}
-                  </button>
+                  <div class="table-actions">
+                    <button
+                      class="secondary-btn table-action-btn"
+                      type="button"
+                      :disabled="processingGroupRequestId === String(request.groupId)"
+                      @click="approveScheduleRequest(request)"
+                    >
+                      {{ processingGroupRequestId === String(request.groupId) ? '处理中...' : '同意' }}
+                    </button>
+                    <button
+                      class="danger-btn table-action-btn"
+                      type="button"
+                      :disabled="processingGroupRequestId === String(request.groupId)"
+                      @click="rejectScheduleRequest(request)"
+                    >
+                      拒绝
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -150,7 +206,7 @@
         <p v-else class="empty-text">当前还没有群日程管理申请。</p>
       </section>
 
-      <section v-if="isAdmin" class="panel risk-panel">
+      <section v-if="isAdmin && activeAdminTab === 'risk'" class="panel risk-panel tab-panel">
         <div class="panel-head">
           <h2>群聊状况监控</h2>
           <span class="pill">{{ monitoredGroups.length }}</span>
@@ -190,7 +246,7 @@
         <p v-else class="empty-text">当前还没有群聊监控数据。</p>
       </section>
 
-      <section v-if="isAdmin && selectedUnsafeGroup" class="panel unsafe-detail-panel">
+      <section v-if="isAdmin && activeAdminTab === 'risk' && selectedUnsafeGroup" class="panel unsafe-detail-panel">
         <div class="panel-head detail-head">
           <div>
             <h2>不安全消息详情</h2>
@@ -257,7 +313,7 @@
         <p v-else class="empty-text">这个群当前没有查到不安全消息明细。</p>
       </section>
 
-      <section class="panel-grid">
+      <section v-if="isAdmin && activeAdminTab === 'directory'" class="panel-grid tab-panel">
         <article class="panel">
           <div class="panel-head">
             <h2>群列表</h2>
@@ -331,7 +387,7 @@
         </article>
       </section>
 
-      <section class="panel composer">
+      <section v-if="isAdmin && activeAdminTab === 'messaging'" class="panel composer tab-panel">
         <div class="panel-head">
           <h2>发送测试消息</h2>
         </div>
@@ -387,6 +443,21 @@ import { clearAuth, getCurrentUserId } from '@/utils/auth';
 const router = useRouter();
 const currentUserId = computed(() => getCurrentUserId());
 const isAdmin = ref(false);
+const activeAdminTab = ref('requests');
+
+const adminTabs = [
+  { key: 'requests', label: '日程申请', title: '日程申请', description: '提交新的托管申请，并处理用户提交的待办。' },
+  { key: 'directory', label: '群与机器人', title: '群与机器人', description: '查看机器人状态、群聊列表和好友列表。' },
+  { key: 'risk', label: '风险监控', title: '风险监控', description: '查看群聊违规分和不安全消息详情。' },
+  { key: 'messaging', label: '发送消息', title: '发送消息', description: '向指定群聊或好友发送测试消息。' }
+];
+
+const currentAdminTab = computed(() =>
+  adminTabs.find((tab) => tab.key === activeAdminTab.value) ?? adminTabs[0]
+);
+const currentAdminTabLabel = computed(() => currentAdminTab.value.label);
+const currentAdminTabTitle = computed(() => currentAdminTab.value.title);
+const currentAdminTabDescription = computed(() => currentAdminTab.value.description);
 
 const groups = ref([]);
 const friends = ref([]);
@@ -545,13 +616,15 @@ const loadFriends = async () => {
   }
 };
 
-const loadUnsafeGroups = async () => {
+const loadUnsafeGroups = async ({ silent = false } = {}) => {
   isLoadingUnsafeGroups.value = true;
   try {
     const response = await apiFetch('/api/persistence/admin/group/unsafe');
     unsafeGroups.value = await unwrapApiResponse(response, '获取违规群组列表失败。');
     isAdmin.value = true;
-    setPageMessage('风险监控数据已刷新。');
+    if (!silent) {
+      setPageMessage('风险监控数据已刷新。');
+    }
     await loadBotInfo({ silent: true });
   } catch (error) {
     if (error.message === '无管理员权限，禁止访问' || error.message === '未登录或登录状态已失效') {
@@ -642,7 +715,15 @@ const submitScheduleRequest = async () => {
   }
 };
 
-const handleBotGroupRequest = async (request) => {
+const removeScheduleRequestFromPending = async (groupId) => {
+  const response = await apiFetch(`/api/persistence/admin/schedule/group/requests/${groupId}`, {
+    method: 'DELETE'
+  });
+  await unwrapApiResponse(response, '更新申请状态失败。');
+  scheduleRequests.value = scheduleRequests.value.filter((item) => String(item.groupId) !== String(groupId));
+};
+
+const approveScheduleRequest = async (request) => {
   const groupId = Number(request?.groupId);
   if (!Number.isInteger(groupId) || groupId <= 0) {
     setPageMessage('群号非法，无法处理。', true);
@@ -661,10 +742,45 @@ const handleBotGroupRequest = async (request) => {
       }
     });
     const data = await unwrapApiResponse(response, '处理群日程申请失败。');
-    setPageMessage(data?.message || '群日程申请已处理。');
+    await removeScheduleRequestFromPending(groupId);
+    setPageMessage(data?.message || '申请已同意并移出待处理列表。');
     await loadGroups();
   } catch (error) {
-    setPageMessage(error.message || '处理群日程申请失败。', true);
+    setPageMessage(error.message || '同意申请失败。', true);
+  } finally {
+    processingGroupRequestId.value = '';
+  }
+};
+
+const rejectScheduleRequest = async (request) => {
+  const groupId = Number(request?.groupId);
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    setPageMessage('群号非法，无法拒绝。', true);
+    return;
+  }
+
+  const reason = window.prompt('请输入拒绝理由（可留空）：', '');
+  if (reason === null) {
+    return;
+  }
+
+  const trimmedReason = reason.trim();
+  if (trimmedReason.length > 200) {
+    setPageMessage('拒绝理由最多 200 个字符。', true);
+    return;
+  }
+
+  processingGroupRequestId.value = String(groupId);
+  try {
+    const response = await apiFetch(`/api/persistence/admin/schedule/group/requests/${groupId}/reject`, {
+      method: 'POST',
+      json: { reason: trimmedReason }
+    });
+    const data = await unwrapApiResponse(response, '拒绝申请失败。');
+    scheduleRequests.value = scheduleRequests.value.filter((item) => String(item.groupId) !== String(groupId));
+    setPageMessage(data || '申请已拒绝并移出待处理列表。');
+  } catch (error) {
+    setPageMessage(error.message || '拒绝申请失败。', true);
   } finally {
     processingGroupRequestId.value = '';
   }
@@ -811,10 +927,9 @@ const handleLogout = async () => {
 };
 
 onMounted(async () => {
-  await Promise.all([loadGroups(), loadFriends()]);
-  await loadUnsafeGroups();
+  await loadUnsafeGroups({ silent: true });
   if (isAdmin.value) {
-    await loadScheduleRequests({ silent: true });
+    await Promise.all([loadGroups(), loadFriends(), loadScheduleRequests({ silent: true })]);
   }
 });
 </script>
@@ -822,18 +937,109 @@ onMounted(async () => {
 <style scoped>
 .dashboard-page {
   min-height: 100vh;
-  padding: 24px;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  background: #f7f8fb;
+  color: #17171c;
 }
 
-.dashboard-card {
-  width: min(100%, 1120px);
-  margin: 0 auto;
-  padding: 32px;
-  border-radius: 28px;
-  background: rgba(255, 250, 243, 0.88);
-  border: 1px solid rgba(138, 109, 59, 0.12);
-  box-shadow: 0 24px 80px rgba(71, 46, 16, 0.14);
-  backdrop-filter: blur(18px);
+.dashboard-sidebar {
+  min-height: 100vh;
+  padding: 18px 14px;
+  background: #0f1015;
+  color: #f7f7fb;
+  border-right: 1px solid #262833;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 16px;
+  border-bottom: 1px solid #262833;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6c5ce7, #3b82f6);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.sidebar-brand strong {
+  display: block;
+  color: #fff;
+  font-weight: 760;
+}
+
+.sidebar-brand small,
+.sidebar-user span {
+  display: block;
+  color: #9699a8;
+  font-size: 0.82rem;
+}
+
+.sidebar-user {
+  padding: 10px 12px;
+  border: 1px solid #262833;
+  border-radius: 8px;
+  background: #171923;
+}
+
+.sidebar-user strong {
+  display: block;
+  margin-top: 4px;
+  color: #f7f7fb;
+  font-weight: 720;
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 6px;
+}
+
+.nav-btn {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #b9bdca;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-btn span {
+  color: inherit;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.nav-btn:hover {
+  background: #1b1d28;
+  color: #fff;
+}
+
+.nav-btn.active {
+  background: #232635;
+  color: #fff;
+  box-shadow: inset 3px 0 0 #6c5ce7;
+}
+
+.dashboard-main {
+  min-width: 0;
+  height: 100vh;
+  overflow: auto;
+  padding: 28px 32px;
 }
 
 .header-row {
@@ -841,10 +1047,12 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 20px;
   align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e6e8ef;
 }
 
 .eyebrow {
-  color: var(--auth-accent-deep);
+  color: #6c5ce7;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 0.78rem;
@@ -852,53 +1060,61 @@ onMounted(async () => {
 }
 
 h1 {
-  margin-top: 10px;
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
+  margin-top: 8px;
+  font-size: clamp(1.9rem, 3vw, 2.55rem);
+  line-height: 1.12;
+  font-weight: 760;
 }
 
 .summary,
 .user-line {
-  margin-top: 12px;
-  color: var(--auth-text-secondary);
+  margin-top: 8px;
+  color: #626779;
 }
 
 .toolbar {
   display: flex;
   gap: 12px;
-  margin-top: 24px;
+  min-height: 40px;
+  margin-top: 18px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .panel-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .panel {
   padding: 20px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.62);
-  border: 1px solid rgba(118, 89, 43, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 1px 2px rgba(15, 16, 21, 0.04);
 }
 
 .bot-status-panel {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .risk-panel {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .schedule-request-panel,
 .schedule-admin-panel {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .unsafe-detail-panel {
-  margin-top: 20px;
+  margin-top: 16px;
+}
+
+.tab-panel {
+  margin-top: 16px;
 }
 
 .panel-head {
@@ -909,15 +1125,15 @@ h1 {
 }
 
 .panel-head h2 {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 760;
 }
 
 .pill {
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(214, 111, 42, 0.12);
-  color: var(--auth-accent-deep);
+  background: #f1f2f8;
+  color: #4f5365;
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -925,6 +1141,7 @@ h1 {
 .table-wrap {
   margin-top: 16px;
   overflow: auto;
+  max-height: calc(100vh - 315px);
 }
 
 .request-form-grid {
@@ -953,6 +1170,12 @@ h1 {
   min-width: 840px;
 }
 
+.table-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .table-action-btn {
   padding: 8px 12px;
   white-space: nowrap;
@@ -967,13 +1190,13 @@ h1 {
 .monitor-table th,
 .monitor-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(118, 89, 43, 0.12);
+  border-bottom: 1px solid #eceef4;
   text-align: left;
-  color: var(--auth-text-primary);
+  color: #17171c;
 }
 
 .monitor-table th {
-  color: var(--auth-text-secondary);
+  color: #626779;
   font-size: 0.9rem;
 }
 
@@ -984,13 +1207,13 @@ h1 {
 
 .clickable-row:hover,
 .clickable-row:focus {
-  background: rgba(214, 111, 42, 0.07);
+  background: #f7f8fb;
   outline: none;
 }
 
 .clickable-row.active {
-  background: rgba(255, 159, 28, 0.12);
-  box-shadow: inset 4px 0 0 var(--auth-accent-strong);
+  background: #f3f1ff;
+  box-shadow: inset 3px 0 0 #6c5ce7;
 }
 
 .risk-badge {
@@ -1010,8 +1233,8 @@ h1 {
 }
 
 .risk-low {
-  background: rgba(214, 111, 42, 0.12);
-  color: #8d4f1d;
+  background: rgba(47, 128, 237, 0.1);
+  color: #1f6f8b;
 }
 
 .risk-medium {
@@ -1042,9 +1265,9 @@ h1 {
   gap: 12px;
   min-width: 0;
   padding: 14px 16px;
-  border: 1px solid rgba(118, 89, 43, 0.12);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #e6e8ef;
+  border-radius: 8px;
+  background: #fafbff;
 }
 
 .bot-status-item div {
@@ -1054,13 +1277,13 @@ h1 {
 }
 
 .bot-status-item strong {
-  color: var(--auth-text-primary);
+  color: #17171c;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
 
 .bot-status-item span {
-  color: var(--auth-text-secondary);
+  color: #626779;
   font-size: 0.86rem;
   overflow-wrap: anywhere;
 }
@@ -1087,7 +1310,7 @@ h1 {
 
 .bot-unknown {
   background: rgba(111, 91, 73, 0.12);
-  color: var(--auth-text-secondary);
+  color: #626779;
 }
 
 .detail-head {
@@ -1096,7 +1319,7 @@ h1 {
 
 .detail-subtitle {
   margin-top: 6px;
-  color: var(--auth-text-secondary);
+  color: #626779;
 }
 
 .detail-subtitle span {
@@ -1118,9 +1341,9 @@ h1 {
 
 .unsafe-message-item {
   padding: 16px;
-  border: 1px solid rgba(118, 89, 43, 0.12);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #e6e8ef;
+  border-radius: 8px;
+  background: #fafbff;
 }
 
 .message-topline {
@@ -1132,16 +1355,16 @@ h1 {
 
 .message-score,
 .message-time {
-  color: var(--auth-text-secondary);
+  color: #626779;
   font-size: 0.9rem;
 }
 
 .message-content {
   margin-top: 12px;
   padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(47, 34, 23, 0.05);
-  color: var(--auth-text-primary);
+  border-radius: 8px;
+  background: #f2f3f8;
+  color: #17171c;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -1158,13 +1381,13 @@ h1 {
 }
 
 .message-meta dt {
-  color: var(--auth-text-secondary);
+  color: #626779;
   font-size: 0.82rem;
 }
 
 .message-meta dd {
   margin-top: 4px;
-  color: var(--auth-text-primary);
+  color: #17171c;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -1173,16 +1396,16 @@ h1 {
   display: grid;
   gap: 10px;
   margin-top: 16px;
-  max-height: 320px;
+  max-height: calc(100vh - 360px);
   overflow: auto;
 }
 
 .list-item {
   text-align: left;
-  border: 1px solid rgba(118, 89, 43, 0.12);
-  border-radius: 16px;
+  border: 1px solid #e6e8ef;
+  border-radius: 8px;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.9);
+  background: #fafbff;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -1197,19 +1420,19 @@ h1 {
 }
 
 .list-item-main strong {
-  color: var(--auth-text-primary);
+  color: #17171c;
   overflow-wrap: anywhere;
 }
 
 .list-item-main span,
 .empty-text {
-  color: var(--auth-text-secondary);
+  color: #626779;
   overflow-wrap: anywhere;
 }
 
 .list-item.active {
-  border-color: rgba(214, 111, 42, 0.56);
-  box-shadow: 0 0 0 3px rgba(255, 159, 28, 0.14);
+  border-color: rgba(108, 92, 231, 0.48);
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.10);
 }
 
 .list-item-actions {
@@ -1218,7 +1441,7 @@ h1 {
 
 .danger-btn {
   border: 0;
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 9px 12px;
   background: rgba(176, 62, 47, 0.12);
   color: #8b2718;
@@ -1233,7 +1456,7 @@ h1 {
 }
 
 .composer {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .target-switch {
@@ -1246,22 +1469,46 @@ h1 {
 .secondary-btn,
 .submit-btn,
 .logout-btn {
-  border: 0;
-  border-radius: 16px;
-  padding: 12px 16px;
-  font-weight: 700;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-weight: 650;
   cursor: pointer;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.switch-btn *,
+.secondary-btn *,
+.submit-btn *,
+.logout-btn *,
+.danger-btn * {
+  color: inherit;
 }
 
 .switch-btn,
 .secondary-btn {
-  background: rgba(214, 111, 42, 0.1);
-  color: var(--auth-accent-deep);
+  background: #fff;
+  border-color: #d9dce7;
+  color: #2b2f3d;
+}
+
+.switch-btn:disabled,
+.secondary-btn:disabled,
+.submit-btn:disabled,
+.logout-btn:disabled,
+.danger-btn:disabled {
+  opacity: 0.72;
+  cursor: wait;
 }
 
 .switch-btn.active {
-  background: linear-gradient(135deg, var(--auth-accent), var(--auth-accent-strong));
-  color: #1d1204;
+  background: #17171c;
+  border-color: #17171c;
+  color: #fff;
 }
 
 .field {
@@ -1272,7 +1519,7 @@ h1 {
 .field span {
   display: block;
   margin-bottom: 8px;
-  color: var(--auth-text-primary);
+  color: #2b2f3d;
   font-weight: 600;
 }
 
@@ -1280,11 +1527,11 @@ input,
 textarea {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid rgba(118, 89, 43, 0.14);
-  border-radius: 16px;
+  border: 1px solid #d9dce7;
+  border-radius: 8px;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--auth-text-primary);
+  background: #fff;
+  color: #17171c;
 }
 
 textarea {
@@ -1294,15 +1541,22 @@ textarea {
 .submit-btn,
 .logout-btn {
   margin-top: 20px;
-  background: linear-gradient(135deg, var(--auth-accent), var(--auth-accent-strong));
-  color: #1d1204;
-  box-shadow: 0 16px 32px rgba(214, 111, 42, 0.28);
+  background: #6c5ce7;
+  border-color: #6c5ce7;
+  color: #fff;
+  box-shadow: none;
+}
+
+.logout-btn {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: auto;
 }
 
 .feedback {
   margin-top: 18px;
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: 8px;
   font-size: 0.95rem;
 }
 
@@ -1317,6 +1571,25 @@ textarea {
 }
 
 @media (max-width: 900px) {
+  .dashboard-page {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-sidebar {
+    min-height: auto;
+    position: static;
+  }
+
+  .dashboard-main {
+    height: auto;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .sidebar-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .panel-grid {
     grid-template-columns: 1fr;
   }
@@ -1352,6 +1625,12 @@ textarea {
 
   .danger-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .sidebar-nav {
+    grid-template-columns: 1fr;
   }
 }
 </style>

@@ -55,59 +55,65 @@ const isLoginMode = ref(true);
 .auth-page {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 460px);
-  gap: 48px;
-  align-items: center;
-  padding: 48px clamp(20px, 4vw, 56px);
+  grid-template-columns: minmax(320px, 42vw) minmax(360px, 1fr);
+  background: #f7f8fb;
 }
 
 .auth-hero {
-  color: var(--auth-text-primary);
-  padding-right: clamp(0px, 4vw, 48px);
+  min-height: 100vh;
+  padding: 34px;
+  background: #0f1015;
+  color: #f7f7fb;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .hero-visual {
   position: relative;
-  min-height: 360px;
-  margin-bottom: 28px;
-  border-radius: 32px;
+  min-height: 220px;
+  margin-bottom: 34px;
+  border-radius: 8px;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(27, 15, 6, 0.08), rgba(27, 15, 6, 0.3)),
+    linear-gradient(180deg, rgba(8, 10, 18, 0.1), rgba(8, 10, 18, 0.55)),
     url('/auth/memoecho-bg.png') center/cover no-repeat;
-  box-shadow: 0 28px 80px rgba(67, 42, 14, 0.24);
+  border: 1px solid #262833;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(135deg, rgba(244, 109, 28, 0.32), transparent 44%),
-    linear-gradient(180deg, rgba(19, 10, 4, 0.04), rgba(19, 10, 4, 0.5));
+    linear-gradient(135deg, rgba(108, 92, 231, 0.26), transparent 48%),
+    linear-gradient(180deg, rgba(8, 10, 18, 0.02), rgba(8, 10, 18, 0.62));
 }
 
 .floating-card {
   position: absolute;
   z-index: 1;
   max-width: 280px;
-  padding: 18px 20px;
-  border-radius: 22px;
-  background: rgba(255, 248, 240, 0.88);
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: rgba(23, 25, 35, 0.88);
   backdrop-filter: blur(12px);
-  box-shadow: 0 12px 32px rgba(40, 24, 7, 0.16);
+  border: 1px solid #343746;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
 }
 
 .floating-card strong {
   display: block;
   margin-top: 10px;
   font-size: 1.05rem;
+  color: #fff;
 }
 
 .floating-card p {
   margin-top: 8px;
   font-size: 0.9rem;
   line-height: 1.6;
-  color: #5f4c3b;
+  color: #b9bdca;
 }
 
 .floating-card-primary {
@@ -124,8 +130,8 @@ const isLoginMode = ref(true);
   display: inline-flex;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(214, 111, 42, 0.14);
-  color: var(--auth-accent-deep);
+  background: rgba(108, 92, 231, 0.18);
+  color: #d8d2ff;
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -135,19 +141,20 @@ const isLoginMode = ref(true);
   align-items: center;
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--auth-accent-strong);
+  background: rgba(108, 92, 231, 0.18);
+  color: #d8d2ff;
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .auth-hero h1 {
-  margin-top: 24px;
-  font-size: clamp(2.6rem, 5vw, 4.8rem);
-  line-height: 1.02;
-  font-weight: 700;
-  max-width: 10ch;
+  margin-top: 20px;
+  font-size: clamp(2.1rem, 4.4vw, 4.1rem);
+  line-height: 1.08;
+  font-weight: 760;
+  max-width: 13ch;
+  color: #fff;
 }
 
 .auth-hero p {
@@ -155,7 +162,7 @@ const isLoginMode = ref(true);
   max-width: 44ch;
   font-size: 1rem;
   line-height: 1.8;
-  color: var(--auth-text-secondary);
+  color: #b9bdca;
 }
 
 .hero-points {
@@ -170,21 +177,24 @@ const isLoginMode = ref(true);
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--auth-text-primary);
+  color: #f7f7fb;
 }
 
 .hero-points li::before {
   content: '';
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--auth-accent), var(--auth-accent-strong));
-  box-shadow: 0 0 0 6px rgba(255, 159, 28, 0.14);
+  background: #6c5ce7;
+  box-shadow: 0 0 0 5px rgba(108, 92, 231, 0.18);
 }
 
 .auth-panel {
   display: flex;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 40px clamp(22px, 6vw, 88px);
 }
 
 .panel-switch-enter-active,
@@ -201,13 +211,11 @@ const isLoginMode = ref(true);
 @media (max-width: 960px) {
   .auth-page {
     grid-template-columns: 1fr;
-    gap: 28px;
-    padding-top: 32px;
-    padding-bottom: 32px;
   }
 
   .auth-hero {
-    padding-right: 0;
+    min-height: auto;
+    padding: 28px;
   }
 
   .auth-hero h1 {
@@ -215,7 +223,12 @@ const isLoginMode = ref(true);
   }
 
   .hero-visual {
-    min-height: 300px;
+    min-height: 260px;
+  }
+
+  .auth-panel {
+    min-height: auto;
+    padding: 28px;
   }
 }
 

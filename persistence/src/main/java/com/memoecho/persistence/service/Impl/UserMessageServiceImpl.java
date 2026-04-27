@@ -76,7 +76,9 @@ public class UserMessageServiceImpl implements UserMessageService {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = jwtUtil.createToken(loginRequest.getUserId().toString());
+        String role = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority())) ? "ADMIN" : "USER";
+        String jwt = jwtUtil.createToken(loginRequest.getUserId().toString(), role);
         return new LoginResponse(loginRequest.getUserId(), jwt, "登录成功");
     }
 }

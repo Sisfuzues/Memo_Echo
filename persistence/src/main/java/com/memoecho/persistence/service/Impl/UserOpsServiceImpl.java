@@ -51,4 +51,15 @@ public class UserOpsServiceImpl implements UserOpsService {
                 ))
                 .toList();
     }
+
+    @Override
+    public boolean removeScheduleGroupRequest(Long groupId) {
+        if (groupId == null) {
+            return false;
+        }
+
+        Long removed = stringRedisTemplate.opsForHash()
+                .delete(SCHEDULE_GROUP_REQUEST_KEY, groupId.toString());
+        return removed != null && removed > 0;
+    }
 }
