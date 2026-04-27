@@ -324,24 +324,24 @@ onBeforeUnmount(() => {
 <style scoped>
 .auth-card {
   width: min(100%, 430px);
-  padding: 32px;
-  border-radius: 28px;
-  background: rgba(255, 250, 243, 0.88);
-  border: 1px solid rgba(138, 109, 59, 0.12);
-  box-shadow: 0 24px 80px rgba(71, 46, 16, 0.14);
-  backdrop-filter: blur(18px);
+  padding: 30px;
+  border-radius: var(--radius-card);
+  background: #fff;
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 18px 50px rgba(15, 16, 21, 0.08);
 }
 
 .card-header h2 {
   margin-top: 8px;
-  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  font-size: clamp(1.65rem, 3vw, 2.05rem);
   line-height: 1.15;
-  color: var(--auth-text-primary);
+  color: #17171c;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-weight: 700;
 }
 
 .eyebrow {
-  color: var(--auth-accent-deep);
+  color: #6c5ce7;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 0.78rem;
@@ -350,7 +350,7 @@ onBeforeUnmount(() => {
 
 .subtitle {
   margin-top: 12px;
-  color: var(--auth-text-secondary);
+  color: #626779;
 }
 
 .auth-form {
@@ -365,27 +365,27 @@ onBeforeUnmount(() => {
 .field span {
   display: block;
   margin-bottom: 8px;
-  color: var(--auth-text-primary);
+  color: #2b2f3d;
   font-weight: 600;
 }
 
 input {
   display: block;
   width: 100%;
-  border: 1px solid rgba(118, 89, 43, 0.14);
-  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-control);
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--auth-text-primary);
+  background: #f9fafb;
+  color: #17171c;
   box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 input:focus {
   outline: none;
-  border-color: rgba(214, 111, 42, 0.65);
-  box-shadow: 0 0 0 4px rgba(255, 159, 28, 0.18);
-  transform: translateY(-1px);
+  border-color: rgba(108, 92, 231, 0.42);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.10);
 }
 
 .password-field {
@@ -414,19 +414,20 @@ input:focus {
   padding: 0 12px;
   border: 0;
   border-radius: 999px;
-  background: rgba(214, 111, 42, 0.12);
-  color: var(--auth-accent-deep);
+  background: #f3f1ff;
+  color: #4f46bd;
   font-weight: 600;
   cursor: pointer;
 }
 
 .secondary-btn {
   border: 0;
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   height: 48px;
   padding: 0 16px;
-  background: rgba(214, 111, 42, 0.12);
-  color: var(--auth-accent-deep);
+  background: #fff;
+  border: 1px solid #d9dce7;
+  color: #2b2f3d;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
@@ -450,13 +451,13 @@ input:focus {
 
 .input-hint {
   margin-top: 6px;
-  color: var(--auth-text-secondary);
+  color: #626779;
   font-size: 0.86rem;
 }
 
 .feedback {
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   margin-bottom: 16px;
   font-size: 0.92rem;
 }
@@ -478,31 +479,22 @@ input:focus {
 
 .input-hint {
   margin-top: 6px;
-  color: var(--auth-text-secondary);
+  color: #626779;
   font-size: 0.88rem;
-}
-
-.feedback {
-  padding: 12px 14px;
-  border-radius: 14px;
-  margin-bottom: 16px;
-  font-size: 0.92rem;
-  color: #22623d;
-  background: rgba(96, 182, 124, 0.14);
 }
 
 .submit-btn {
   width: 100%;
   border: 0;
-  border-radius: 18px;
+  border-radius: var(--radius-control);
   padding: 14px 18px;
-  background: linear-gradient(135deg, var(--auth-accent), var(--auth-accent-strong));
-  color: #1d1204;
+  background: #6c5ce7;
+  color: #fff;
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 16px 32px rgba(214, 111, 42, 0.28);
+  box-shadow: none;
 }
 
 .submit-btn:hover {
@@ -511,14 +503,14 @@ input:focus {
 
 .switch-text {
   margin-top: 20px;
-  color: var(--auth-text-secondary);
+  color: #626779;
   text-align: center;
 }
 
 .inline-action {
   border: 0;
   background: transparent;
-  color: var(--auth-accent-deep);
+  color: #4f46bd;
   font-weight: 700;
   cursor: pointer;
 }
@@ -526,7 +518,7 @@ input:focus {
 @media (max-width: 640px) {
   .auth-card {
     padding: 24px;
-    border-radius: 24px;
+    border-radius: var(--radius-card);
   }
 }
 </style>

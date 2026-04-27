@@ -1,10 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import LandingView from '../views/LandingView.vue'
 import AuthView from '../views/AuthView.vue'
 import { getAuthToken } from '@/utils/auth'
 
 const routes = [
     {
         path: '/',
+        name: 'Landing',
+        component: LandingView
+    },
+    {
+        path: '/auth',
         name: 'Auth',
         component: AuthView,
         meta: { guestOnly: true }
@@ -27,7 +33,7 @@ router.beforeEach((to) => {
     const token = getAuthToken()
 
     if (to.meta.requiresAuth && !token) {
-        return { path: '/' }
+        return { path: '/auth' }
     }
 
     if (to.meta.guestOnly && token) {

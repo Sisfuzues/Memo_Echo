@@ -4,6 +4,7 @@ import com.memoecho.common.response.ApiResponse;
 import com.memoecho.memo_echo_apis.vo.UnsafeGroupVO;
 import com.memoecho.memo_echo_apis.vo.UnsafeMessageVO;
 import com.memoecho.persistence.dto.ScheduleGroupRequestVO;
+import com.memoecho.persistence.dto.ScheduleGroupRejectDTO;
 import com.memoecho.persistence.mapper.UserMessageMapper;
 import com.memoecho.persistence.pojo.DTO.Bot;
 import com.memoecho.persistence.pojo.DTO.FriendRequest;
@@ -78,6 +79,45 @@ public class AdminOpsController {
     public ApiResponse<List<ScheduleGroupRequestVO>> listScheduleGroupRequests() {
         List<ScheduleGroupRequestVO> requests = userOpsService.listScheduleGroupRequests();
         return ApiResponse.success("获取群日程管理申请成功", requests);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/schedule/group/requests/{groupId}")
+    public ApiResponse<String> approveScheduleGroupRequest(@PathVariable Long groupId) {
+        if (groupId == null || groupId <= 0) {
+            return ApiResponse.fail(400, "groupId 非法。");
+        }
+
+        boolean removed = userOpsService.removeScheduleGroupRequest(groupId);
+        if (!removed) {
+            return ApiResponse.fail(404, "申请不存在或已处理。");
+        }
+
+        return ApiResponse.success("申请已同意并移出待处理列表。", "ok");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/schedule/group/requests/{groupId}/reject")
+    public ApiResponse<String> rejectScheduleGroupRequest(
+            @PathVariable Long groupId,
+            @RequestBody(required = false) ScheduleGroupRejectDTO dto
+    ) {
+        if (groupId == null || groupId <= 0) {
+            return ApiResponse.fail(400, "groupId 非法。");
+        }
+
+        String reason = dto == null || dto.getReason() == null ? "" : dto.getReason().trim();
+        if (reason.length() > 200) {
+            return ApiResponse.fail(400, "拒绝理由最多 200 个字符。");
+        }
+
+        boolean removed = userOpsService.removeScheduleGroupRequest(groupId);
+        if (!removed) {
+            return ApiResponse.fail(404, "申请不存在或已处理。");
+        }
+
+        String message = reason.isEmpty() ? "申请已拒绝。" : "申请已拒绝，理由：" + reason;
+        return ApiResponse.success(message, "ok");
     }
 
     @PreAuthorize("hasRole('ADMIN')")

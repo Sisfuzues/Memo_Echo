@@ -12,10 +12,6 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api/persistence': {
-        target: 'http://127.0.0.1:8280',
-        changeOrigin: true,
-      },
       '/api': {
         target: 'http://127.0.0.1:8090',
         changeOrigin: true,

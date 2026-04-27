@@ -9,4 +9,6 @@ public interface UserOpsService {
     ScheduleGroupRequestVO requestScheduleGroup(ScheduleGroupRequestDTO dto, String requesterUserId);
 
     List<ScheduleGroupRequestVO> listScheduleGroupRequests();
+
+    boolean removeScheduleGroupRequest(Long groupId);
 }

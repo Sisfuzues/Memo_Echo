@@ -1,8 +1,7 @@
 package com.memoecho.ai_brain;
 
 import com.alibaba.fastjson2.JSON;
-import com.memoecho.ai_brain.service.Impl.UnextractedMsgServiceImpl;
-import com.memoecho.ai_brain.service.MQService;
+import com.memoecho.ai_brain.service.UnextractedMsgService;
 import com.memoecho.memo_echo_apis.dto.ReceivedMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,7 @@ import org.springframework.util.ResourceUtils;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AiBrainApplicationTests {
     @Autowired
-    private UnextractedMsgServiceImpl unextractedMsgService;
+    private UnextractedMsgService unextractedMsgService;
 
     @Test
     void testAiService() throws IOException, InterruptedException {
