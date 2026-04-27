@@ -1,38 +1,27 @@
 # fore
 
-This template should help get you started developing with Vue 3 in Vite.
+Memo Echo 的前端管理台，使用 Vue 3 + Vite 构建。
 
-## Recommended IDE Setup
+## 开发
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
+```bash
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+## 打包
 
-```sh
+```bash
 npm run build
 ```
+
+## 页面入口
+
+- `/` 落地页
+- `/auth` 登录 / 注册
+- `/dashboard` 后台控制台
+
+## 说明
+
+前端和后端联调说明以根目录 [`readme.md`](/home/zhouyifei/Java_Project/Memo_Echo/readme.md) 为准。  
+接口字段与后端契约请查看 [`memo_echo_apis/APIS规范.md`](/home/zhouyifei/Java_Project/Memo_Echo/memo_echo_apis/APIS规范.md)。
