@@ -204,8 +204,8 @@ services:
   <a href="https://github.com/big-orange947">
     <img src="https://avatars.githubusercontent.com/big-orange947" width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
   </a>
-  <a href="https://github.com/zoujan1433223-lgtm">
-    <img src="https://avatars.githubusercontent.com/zoujan1433223-lgtm" width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
+  <a href="https://github.com/Nicky-swttz">
+    <img src="https://avatars.githubusercontent.com/Nicky-swttz" width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
   </a>
 </div>
 
