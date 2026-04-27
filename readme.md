@@ -8,22 +8,22 @@
 
 </div>
 
-
-## 项目介绍
-本项目是面向与工作性的群聊软件中的日程管理以及询问。现代社会中，人们往往淹没与信息的洪流中，本项目志在帮助用户引入智能体机器人来识别并记忆群聊中的日程信息。可以让用户通过@机器人帐号的方式用自然语言查询相关日程。
+## 📖 项目介绍
+---
+本项目专注于工作群聊场景下的日程托管与智能问答。现代社会中，人们往往淹没于信息的洪流中，本项目志在帮助用户引入智能体机器人来识别并记忆群聊中的日程信息。可以让用户通过 @机器人账号 的方式，用自然语言查询相关日程。
 
 由于本项目的开发时间比较短 ~~(开发者还是学生)~~，以后会不断优化与完善并且提供更多功能。
 
 **核心功能:**
 
-- 机器人消息接入、回复和主动控制(管理员端)
-- 群聊消息敏感词过滤与风险监控(管理员端)
+- 机器人消息接入、回复和主动控制 (管理员端)
+- 群聊消息敏感词过滤与风险监控 (管理员端)
 - 日程消息抽取、结构化存储与向量检索
 - 普通用户注册、登录、提交群日程托管申请
 - 管理员审核群申请、管理群聊与好友、发送消息
 
-## 效果展示
-
+## 🌟 效果展示
+---
 面对群聊中密集的信息轰炸，只需 @MemoEcho，即可随时获取清晰的日程安排。
 
 | 📥 杂乱的原始群通知 | 📤 MemoEcho 的智能响应 |
@@ -31,15 +31,16 @@
 | <img src="document/Image/成品演示图1.png" width="350"> | <img src="document/Image/成品演示图2.png" width="350"> |
 | *辅导员发布的长篇校运会、考研分享会通知...* | *自动提取时间、地点、要求，条理清晰地返回* |
 
-此外，**MemoEcho** 还能通过查询结果推断用户是否有记错时间。
+此外，**MemoEcho** 还能通过查询结果，智能推断并纠正用户可能记错的时间：
 
-![演示图3](document/Image/成品演示图5.png)
+![多场景互动演示](document/Image/成品演示图5.png)
 
-## 项目架构图
+## 🗺️ 项目架构图
+---
+![系统数据流向与微服务架构图](document/Image/MemoEcho架构图.png)
 
-![流程图](document/Image/MemoEcho架构图.png)
-
-## 项目结构
+## 📂 项目结构
+---
 ```text
 Memo_Echo
 ├── api_gateway         网关入口
@@ -51,7 +52,9 @@ Memo_Echo
 ├── memo_echo_common    通用响应体与基础工具
 └── fore                前端管理台
 ```
-## 技术栈
+
+## 🛠️ 技术栈
+---
 **后端核心**
 - **开发环境**: Java 17
 - **基础框架**: Spring Boot 3.2, Spring Cloud
@@ -67,8 +70,10 @@ Memo_Echo
 - **管理后台**: Vue 3 + Vite
 - **机器人协议**: NapCat / OneBot
 
-## 快速启动
-> 如何看快速本地部署指南
+## 🚀 快速启动
+---
+> 💡 完整本地环境搭建与服务启动指南
+
 ### 运行前准备
 请先准备以下基础服务：
 
@@ -79,7 +84,7 @@ Memo_Echo
 - Qdrant
 - NapCat / OneBot 机器人环境
 
-### 模块端口
+### 模块端口映射
 | 模块 | 端口 | 说明 |
 | --- | --- | --- |
 | `api_gateway` | `8090` | 网关入口 |
@@ -163,25 +168,30 @@ services:
 
 如果不设置，会使用本地默认值，但正式环境不建议沿用默认值。
 
-## 相关文档
-
+## 📚 相关文档
+---
 - 接口规范: [`memo_echo_apis/APIS规范.md`](memo_echo_apis/APIS规范.md)
 - 前端说明: [`fore/README.md`](fore/README.md)
 - 机器人部署说明: [`document/readme.md`](document/readme.md)
 
 ## 🤝 参与贡献
+---
 欢迎大家提交 Issue 和 Pull Request！如果你有好的想法或发现了 Bug，请随时与我联系。
 由于开发者目前还是学生，精力和时间有限，回复可能不够及时，请谅解~ ❤️
 
+## 📄 开源协议
+---
+本项目基于 [MIT License](LICENSE) 协议开源，允许自由使用和二次开发，但请保留原作者信息。
 
 ## 📞 联系作者
+---
 - **Email**: 
-  - [Sisfuze的邮箱](zhou.yifei15450@gmail.com)
-- **Blog / GitHub**:
-   - [Sisfuze](https://github.com/Sisfuzues/Memo_Echo)
+  - [Sisfuze 的邮箱](mailto:zhou.yifei15450@gmail.com)
+- **GitHub**:
+  - [Sisfuze的主页](https://github.com/Sisfuzues/Memo_Echo)
 
 ## 🙏 特别感谢
-
+---
 除了众多优秀的开源框架外，特别感谢以下个人对本项目的帮助与贡献：
 
 <div align="left">
@@ -195,7 +205,7 @@ services:
     <img src="https://avatars.githubusercontent.com/big-orange947" width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
   </a>
   <a href="https://github.com/zoujan1433223-lgtm">
-    <img src="https://avatars.githubusercontent.com/zoujan1433223-lgtm width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
+    <img src="https://avatars.githubusercontent.com/zoujan1433223-lgtm" width="50" height="50" style="border-radius: 50%;" alt="Contributor Name"/>
   </a>
 </div>
 
